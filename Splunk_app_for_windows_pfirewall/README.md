@@ -1,4 +1,11 @@
-## HOW TO INSTALL APP
+# DESCRIPTION
+
+This App was designed to collect, parse, normalize against CIM and visualize network traffic insight from your windows desktop or server local firewall activities.
+This App contain configurations for data inputs and knowledge objects that enhance search capabilities and detection on your machine network without install any third party tools. It is also certified to ensure compliance with Common Information Model (CIM) standards.
+    
+
+
+# HOW TO INSTALL APP
 
 1) Install the app in your indexers/search heads, 
 
