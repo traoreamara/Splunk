@@ -1,0 +1,40 @@
+#main_container {
+    padding: 10px;
+}
+
+input {
+    margin-left: 20px;
+}
+
+#setup_button {
+    margin-top: 15px;
+    background-color: green;
+    color: white;
+}
+
+.success {
+    margin-top: 15px;
+    color: green;
+    display: none;
+}
+
+.error {
+    margin-top: 15px;
+    color: darkred;
+    display: none;
+}
+
+#error_details {
+    margin-top: 15px;
+    display: none;
+}
+
+.parameterCell {
+    text-align: center;
+    width: 20%;
+}
+
+.descriptionCell {
+    text-align: center;
+    width: 60%;
+}
