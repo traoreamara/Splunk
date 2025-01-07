@@ -27,9 +27,11 @@ This App contain configurations for data inputs and knowledge objects that enhan
 
 We provided an ip exclusion to help remove noise detection and false positive. feel free to enrich the lookup file whitelist_ip_ranges.csv .
 
-You can make search using this request :   index=* sourcetype="windows:pfirewall"
+You can make search using this request :   
+
+					   index=* sourcetype="windows:pfirewall"
 						
-						OR use the request below to optimize search and ignore legitimate IP
+					   OR use the request below to optimize search and ignore legitimate IP
 
 					   index IN `windows_pfirewall_index` sourcetype="windows:pfirewall" `ip_whitelist`
 						
