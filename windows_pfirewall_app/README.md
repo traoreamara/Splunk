@@ -1,3 +1,7 @@
+# Release  history
+
+ v 1.0.1 : - Correction on metadata, Splunk cloud compatibility review, and dashboard versions upgrade
+
 # DESCRIPTION
 
 This App was designed to collect, parse, normalize against CIM and visualize network traffic insight from your windows desktop or server local firewall activities.
