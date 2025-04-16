@@ -1,5 +1,5 @@
 ********************************
-New version changes </h2>
+New version changes 
 ********************************
 
     Adding new log source "firewall changes actitivies"
