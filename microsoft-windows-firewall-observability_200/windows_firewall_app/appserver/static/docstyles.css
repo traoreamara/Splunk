@@ -1,0 +1,56 @@
+h1 {
+            color: #ffffff;
+    }
+
+ol {
+            margin-left: 50px;
+ }
+
+ li {
+            margin-bottom: 10px;
+ }
+
+ a {
+            color: #007BFF;
+            text-decoration: none;
+ }
+
+ a:hover {
+            text-decoration: underline;
+}
+
+.idtable {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.idtable thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.idtable th, .idtable td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+.idtable tr:nth-child(even) {
+    background-color: #f5f5f5;
+	color: #000000;
+}
+
+.idtable tr:hover {
+    background-color: #D6EEEE;
+}
+
+.idtable caption {
+    caption-side: top;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px;
+}

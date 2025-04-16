@@ -1,0 +1,85 @@
+<form version="1.1" theme="light" stylesheet="table_wild.css" script="reset_tokens.js">
+  <label>Windows Host Traffic ( view 2 )</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="global_time" searchWhenChanged="true">
+      <label>Time</label>
+      <default>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="text_host" searchWhenChanged="true">
+      <label>By Host</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="dest_port" searchWhenChanged="true">
+      <label>By Port</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="ms_ip" searchWhenChanged="true">
+      <label>By Ip Address</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="ms_exclusion" searchWhenChanged="true">
+      <label>Apply Exclusion</label>
+      <choice value="`ip_whitelist`">IP Exclusion (Lookup File)</choice>
+      <choice value="*">None</choice>
+      <default>`ip_whitelist`</default>
+      <initialValue>`ip_whitelist`</initialValue>
+    </input>
+    <html>
+        <button id="resetButton">Reset All Filters</button>
+      </html>
+  </fieldset>
+  <row>
+    <panel>
+      <html depends="$alwaysHideHTMLCSSPanel$">
+        <style>
+          #table1 table tbody td div.multivalue-subcell[data-mv-index="1"]{
+            display: none;
+          }
+        </style>
+      </html>
+      <table id="table1">
+        <title>Destination Port by Region</title>
+        <search>
+          <query>index IN `windows_firewall_index` sourcetype="windows:pfirewall" $ms_exclusion$ | iplocation src_ip prefix=src_ | iplocation dest_ip prefix=dest_ | eval src_Country = case(isnull(src_Country), "N/A", true(), src_Country) | eval dest_Country = case(isnull(dest_Country),  "N/A", true(), dest_Country) | search host IN ($text_host$) dest_port IN ($dest_port$) (src_ip IN ($ms_ip$) OR dest_ip IN ($ms_ip$)) | stats count by host src_ip src_Country dest_ip dest_Country dest_port action | eval color=case(action="allowed","blue",action="blocked","red") | foreach host src_ip src_Country dest_ip dest_Country dest_port action count [ eval &lt;&lt;FIELD&gt;&gt;=mvappend('&lt;&lt;FIELD&gt;&gt;',color)] | fields - color</query>
+          <earliest>$global_time.earliest$</earliest>
+          <latest>$global_time.latest$</latest>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">15</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">preview</option>
+        <format type="color" field="host">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="src_ip">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="src_Country">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="dest_ip">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="dest_Country">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="dest_port">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="action">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+        <format type="color" field="count">
+          <colorPalette type="expression">case (match(value,"blue"), "#294e70",match(value,"red"), "#af575a")</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>
