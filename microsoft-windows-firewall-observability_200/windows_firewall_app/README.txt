@@ -1,5 +1,5 @@
 ********************************
-<h2 New version changes </h2>
+New version changes </h2>
 ********************************
 
     Adding new log source "firewall changes actitivies"
@@ -14,7 +14,7 @@
     Retirement of the traffic geographic map view from the dashboard. This feature will be moved to another app dedicated for overall traffic security including all dedicated firewall products.
 
 
-## To Do
+##To Do
 
 1) Install the app in your indexers/search nodes, 
 
