@@ -1,4 +1,18 @@
-# README
+********************************
+New version changes
+********************************
+
+    Adding new log source "firewall changes actitivies"
+    Adding new dashboard view for firewall status changes, setting changes and traffic events
+    Adding option in dashboards to choose to apply or not whitelist, exclude or not lan to lan traffic
+    Adding new Field mapping with "change" datamodel fields regarding to the CIM reference
+    Adding report : Windows Host Firewall traffic History, Host Firewall All Changes History, Host Firewall Status Change History
+    Adding in app full Documentation page
+    Renaming macro windows_pfirewall_index to windows_firewall_index
+    Renaming app directory from windows_pfirewall_app to windows_firewall_app
+    Removing timezone setting from profs.conf
+    Retirement of the traffic geographic map view from the dashboard. This feature will be moved to another app dedicated for overall traffic security including all dedicated firewall products.
+
 
 ## To Do
 
