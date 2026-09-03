@@ -1,0 +1,550 @@
+{
+  "modelName": "Windows_Firewall_Observability",
+  "displayName": "Windows Firewall Observability",
+  "description": "Accelerate this data model to make the app dashboards run on summaries instead of raw events. Once acceleration is on, set the wfo_summariesonly macro to 'summariesonly=true allow_old_summaries=true'.",
+  "objectSummary": {
+    "Event-Based": 2,
+    "Transaction-Based": 0,
+    "Search-Based": 0
+  },
+  "objects": [
+    {
+      "objectName": "Traffic",
+      "displayName": "Traffic",
+      "parentName": "BaseEvent",
+      "comment": "Connections allowed or blocked by Windows Defender Firewall (pfirewall.log).",
+      "fields": [
+        {
+          "fieldName": "action",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "action",
+          "comment": "Allowed or blocked"
+        },
+        {
+          "fieldName": "app",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "app",
+          "comment": "Reporting application"
+        },
+        {
+          "fieldName": "bytes",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "bytes",
+          "comment": "Packet size"
+        },
+        {
+          "fieldName": "bytes_in",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "bytes_in",
+          "comment": "Bytes received"
+        },
+        {
+          "fieldName": "bytes_out",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "bytes_out",
+          "comment": "Bytes sent"
+        },
+        {
+          "fieldName": "dest",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dest",
+          "comment": "Destination"
+        },
+        {
+          "fieldName": "dest_ip",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dest_ip",
+          "comment": "Destination address"
+        },
+        {
+          "fieldName": "dest_port",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dest_port",
+          "comment": "Destination port"
+        },
+        {
+          "fieldName": "dest_scope",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dest_scope",
+          "comment": "internal or external"
+        },
+        {
+          "fieldName": "dest_service",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dest_service",
+          "comment": "Resolved service name"
+        },
+        {
+          "fieldName": "direction",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "direction",
+          "comment": "inbound / outbound / unknown"
+        },
+        {
+          "fieldName": "dvc",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dvc",
+          "comment": "Reporting device"
+        },
+        {
+          "fieldName": "icmp_code",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "icmp_code",
+          "comment": "ICMP code"
+        },
+        {
+          "fieldName": "icmp_type",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "icmp_type",
+          "comment": "ICMP type"
+        },
+        {
+          "fieldName": "is_noise",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "is_noise",
+          "comment": "1 for loopback / link-local / multicast / broadcast / reserved traffic"
+        },
+        {
+          "fieldName": "packets_in",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "packets_in",
+          "comment": "Inbound packet count"
+        },
+        {
+          "fieldName": "packets_out",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "packets_out",
+          "comment": "Outbound packet count"
+        },
+        {
+          "fieldName": "process_id",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "process_id",
+          "comment": "Process id, when the log format provides it"
+        },
+        {
+          "fieldName": "protocol",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "protocol",
+          "comment": "Network layer protocol"
+        },
+        {
+          "fieldName": "protocol_version",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "protocol_version",
+          "comment": "ipv4 or ipv6"
+        },
+        {
+          "fieldName": "src",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "src",
+          "comment": "Source"
+        },
+        {
+          "fieldName": "src_ip",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "src_ip",
+          "comment": "Source address"
+        },
+        {
+          "fieldName": "src_port",
+          "owner": "Traffic",
+          "type": "number",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "src_port",
+          "comment": "Source port"
+        },
+        {
+          "fieldName": "src_scope",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "src_scope",
+          "comment": "internal or external"
+        },
+        {
+          "fieldName": "tcp_flag",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "tcp_flag",
+          "comment": "TCP flags"
+        },
+        {
+          "fieldName": "transport",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "transport",
+          "comment": "tcp / udp / icmp"
+        },
+        {
+          "fieldName": "user",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "user",
+          "comment": "User"
+        },
+        {
+          "fieldName": "vendor_product",
+          "owner": "Traffic",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "vendor_product",
+          "comment": "Vendor and product"
+        }
+      ],
+      "calculations": [],
+      "constraints": [
+        {
+          "search": "index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\"",
+          "owner": "Traffic"
+        }
+      ],
+      "lineage": "Traffic"
+    },
+    {
+      "objectName": "Changes",
+      "displayName": "Changes",
+      "parentName": "BaseEvent",
+      "comment": "Windows Defender Firewall settings, rule and service changes.",
+      "fields": [
+        {
+          "fieldName": "action",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "action",
+          "comment": "created / modified / deleted"
+        },
+        {
+          "fieldName": "change_type",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "change_type",
+          "comment": "firewall-setting / firewall-policy / firewall-service"
+        },
+        {
+          "fieldName": "Computer",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "Computer",
+          "comment": "Host whose firewall changed"
+        },
+        {
+          "fieldName": "dest",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dest",
+          "comment": "Destination"
+        },
+        {
+          "fieldName": "direction",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "direction",
+          "comment": "Rule direction"
+        },
+        {
+          "fieldName": "dvc",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "dvc",
+          "comment": "Reporting device"
+        },
+        {
+          "fieldName": "EventID",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "EventID",
+          "comment": "Windows event id"
+        },
+        {
+          "fieldName": "object",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "object",
+          "comment": "Rule or setting name"
+        },
+        {
+          "fieldName": "object_attrs",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "object_attrs",
+          "comment": "Attribute changed"
+        },
+        {
+          "fieldName": "object_category",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "object_category",
+          "comment": "firewall"
+        },
+        {
+          "fieldName": "object_path",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "object_path",
+          "comment": "Application path"
+        },
+        {
+          "fieldName": "result",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "result",
+          "comment": "Human readable outcome"
+        },
+        {
+          "fieldName": "rule_action",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "rule_action",
+          "comment": "allowed or blocked"
+        },
+        {
+          "fieldName": "setting_name",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "setting_name",
+          "comment": "Decoded SettingType"
+        },
+        {
+          "fieldName": "severity",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "severity",
+          "comment": "critical / high / medium / informational"
+        },
+        {
+          "fieldName": "status",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "status",
+          "comment": "active / inactive / success / failure"
+        },
+        {
+          "fieldName": "user",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "user",
+          "comment": "Modifying user"
+        },
+        {
+          "fieldName": "vendor_product",
+          "owner": "Changes",
+          "type": "string",
+          "required": false,
+          "multivalue": false,
+          "hidden": false,
+          "editable": true,
+          "displayName": "vendor_product",
+          "comment": "Vendor and product"
+        }
+      ],
+      "calculations": [],
+      "constraints": [
+        {
+          "search": "index IN `windows_firewall_index` source=\"*WinEventLog:Microsoft-Windows-Windows Firewall With Advanced Security/Firewall\"",
+          "owner": "Changes"
+        }
+      ],
+      "lineage": "Changes"
+    }
+  ]
+}

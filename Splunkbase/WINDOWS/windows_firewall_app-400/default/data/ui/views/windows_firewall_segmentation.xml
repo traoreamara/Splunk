@@ -1,0 +1,947 @@
+<dashboard version="2" theme="dark">
+    <label>Segmentation Map</label>
+    <description>East-west flow map built from the firewall log: host to peer graph, segment to segment matrix, administrative paths and lateral reach scoring.</description>
+    <definition><![CDATA[
+{
+ "title": "Segmentation Map",
+ "description": "East-west flow map built from the firewall log: host to peer graph, segment to segment matrix, administrative paths and lateral reach scoring.",
+ "visualizations": {
+  "hdr": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Segmentation & Lateral Movement\nThe firewall log is the cheapest east-west flow evidence you have. This view turns it into a map: who reaches whom, across which segment boundary, on which service.\n\nUse it to answer *what would break if I blocked this path* before you write the rule.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_hosts": {
+   "type": "splunk.singlevalue",
+   "title": "Hosts",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_peers": {
+   "type": "splunk.singlevalue",
+   "title": "Peers reached",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('peers') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#31c2c9"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_int": {
+   "type": "splunk.singlevalue",
+   "title": "Internal peers",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('internal_peers') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#a175ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "East-west reach. This is the number segmentation work is meant to bring down."
+  },
+  "kpi_ext": {
+   "type": "splunk.singlevalue",
+   "title": "External peers",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('external_peers') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#f5a623"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_svc": {
+   "type": "splunk.singlevalue",
+   "title": "Distinct services",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('services') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#2fb67c"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_flows": {
+   "type": "splunk.singlevalue",
+   "title": "Flows",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('flows') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#dbe0e6"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_g1": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Host ↔ peer map\nEdge thickness is the number of flows. Drag nodes to untangle a cluster. Raise the edge limit above for more detail.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_graph_host": {
+   "type": "splunk.networkGraph",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_graph_host"
+   },
+   "options": {
+    "layout": "force",
+    "linkStyle": "c",
+    "linkDirection": "one-way",
+    "nodeColors": "#4fa3ff",
+    "backgroundColor": "transparent",
+    "nodeHorizontalPadding": 60,
+    "linkValues": "> primary | seriesByName('linkValues')"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "Built from the top N flows only — raise the edge limit for more detail, at the cost of readability.",
+   "hideWhenNoData": true
+  },
+  "viz_fanout": {
+   "type": "splunk.table",
+   "title": "Lateral reach per host",
+   "dataSources": {
+    "primary": "ds_fanout"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true,
+    "columnFormat": {
+     "deviation": {
+      "rowBackgroundColors": "> table | seriesByName(\"deviation\") | rangeValue(devColorConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "matrixColorConfig": [
+     {
+      "to": 1,
+      "value": "#1c2229"
+     },
+     {
+      "from": 1,
+      "to": 100,
+      "value": "#16323f"
+     },
+     {
+      "from": 100,
+      "to": 1000,
+      "value": "#1d5570"
+     },
+     {
+      "from": 1000,
+      "to": 10000,
+      "value": "#2a7fa8"
+     },
+     {
+      "from": 10000,
+      "value": "#4fa3ff"
+     }
+    ],
+    "devColorConfig": [
+     {
+      "to": 2,
+      "value": "#1c2229"
+     },
+     {
+      "from": 2,
+      "to": 3,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 3,
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "description": "How many internal hosts each machine reached, against the estate average in standard deviations. A workstation three deviations above its peers is worth explaining.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_g2": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### East-west only\nInternet traffic removed. What is left is the movement your segmentation policy is supposed to constrain.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_graph_ew": {
+   "type": "splunk.networkGraph",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_graph_ew"
+   },
+   "options": {
+    "layout": "force",
+    "linkStyle": "c",
+    "linkDirection": "one-way",
+    "nodeColors": "#a175ff",
+    "backgroundColor": "transparent",
+    "nodeHorizontalPadding": 60,
+    "linkValues": "> primary | seriesByName('linkValues')"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "hideWhenNoData": true
+  },
+  "viz_admin": {
+   "type": "splunk.table",
+   "title": "Administrative protocol paths",
+   "dataSources": {
+    "primary": "ds_admin_paths"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "Accepted RDP, SMB, WinRM, SSH and database flows. In a segmented estate these should come from a short, known list of jump hosts.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_g3": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Segment to segment\nAddresses are grouped by the granularity chosen above. `Internet` collapses every external address into one node.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_graph_segment": {
+   "type": "splunk.networkGraph",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_graph_segment"
+   },
+   "options": {
+    "layout": "hierarchical",
+    "linkStyle": "z",
+    "linkDirection": "one-way",
+    "nodeColors": "#31c2c9",
+    "backgroundColor": "transparent",
+    "nodeHorizontalPadding": 60,
+    "linkValues": "> primary | seriesByName('linkValues')"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "hideWhenNoData": true
+  },
+  "viz_matrix": {
+   "type": "splunk.punchcard",
+   "title": "Flow matrix — every dot is a path that exists today",
+   "dataSources": {
+    "primary": "ds_matrix"
+   },
+   "options": {
+    "seriesColors": [
+     "#31c2c9"
+    ],
+    "backgroundColor": "transparent"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "Rows are source segments, columns are destinations. Dot size is the flow count. An empty cell is a boundary nothing crossed during the period."
+  },
+  "viz_segment_table": {
+   "type": "splunk.table",
+   "title": "Segment pairs",
+   "dataSources": {
+    "primary": "ds_segment_table"
+   },
+   "options": {
+    "count": 15,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true,
+    "columnFormat": {
+     "flows": {
+      "rowBackgroundColors": "> table | seriesByName(\"flows\") | rangeValue(matrixColorConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "matrixColorConfig": [
+     {
+      "to": 1,
+      "value": "#1c2229"
+     },
+     {
+      "from": 1,
+      "to": 100,
+      "value": "#16323f"
+     },
+     {
+      "from": 100,
+      "to": 1000,
+      "value": "#1d5570"
+     },
+     {
+      "from": 1000,
+      "to": 10000,
+      "value": "#2a7fa8"
+     },
+     {
+      "from": 10000,
+      "value": "#4fa3ff"
+     }
+    ],
+    "devColorConfig": [
+     {
+      "to": 2,
+      "value": "#1c2229"
+     },
+     {
+      "from": 2,
+      "to": 3,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 3,
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "hdr_g4": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Services crossing the boundary\nWhich protocols actually carry the cross-segment traffic. Usually a much shorter list than people expect.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_graph_service": {
+   "type": "splunk.networkGraph",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_graph_service"
+   },
+   "options": {
+    "layout": "hierarchical",
+    "linkStyle": "s",
+    "linkDirection": "one-way",
+    "nodeColors": "#2fb67c",
+    "backgroundColor": "transparent",
+    "nodeHorizontalPadding": 60,
+    "linkValues": "> primary | seriesByName('linkValues')"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "hideWhenNoData": true
+  }
+ },
+ "dataSources": {
+  "ds_host_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats count WHERE index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\" BY host | fields host | sort host"
+   },
+   "name": "Host list"
+  },
+  "ds_traffic": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_traffic` $tk_noise_raw$ | search host IN ($ms_host$) action IN ($ms_action$) direction IN ($ms_direction$) | fields _time _raw host source sourcetype index action allowed avg_reach blocked blocked_pct bytes dest_grp dest_ip dest_port dest_scope dest_service deviation direction external_peers first_seen flows hosts internal_peers last_seen linkValues mb peers reachable_hosts sd_reach service services src_grp src_ip src_scope target targets"
+   },
+   "name": "Traffic base search"
+  },
+  "ds_kpi": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| stats dc(host) AS hosts, dc(dest_ip) AS peers, dc(eval(if(dest_scope=\"internal\", dest_ip, null()))) AS internal_peers, dc(eval(if(dest_scope=\"external\", dest_ip, null()))) AS external_peers, dc(dest_port) AS services, count AS flows"
+   },
+   "name": "KPI"
+  },
+  "ds_graph_host": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval source = host, target = if(direction=\"inbound\", src_ip, dest_ip) | where isnotnull(target) AND source!=target | stats count AS linkValues BY source, target | sort - linkValues | head $tk_edges$  | appendpipe [| stats count BY target | rename target AS source | fields source] | table source target linkValues"
+   },
+   "name": "Host to peer graph"
+  },
+  "ds_graph_ew": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| where dest_scope=\"internal\" AND src_scope=\"internal\" | eval source = host, target = if(direction=\"inbound\", src_ip, dest_ip) | where isnotnull(target) AND source!=target | stats count AS linkValues BY source, target | sort - linkValues | head $tk_edges$  | appendpipe [| stats count BY target | rename target AS source | fields source] | table source target linkValues"
+   },
+   "name": "East-west graph"
+  },
+  "ds_graph_segment": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval src_grp = case(src_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", src_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(src_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(src_ip,\".\"),0,2),\".\").\".0/24\"), dest_grp = case(dest_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", dest_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(dest_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(dest_ip,\".\"),0,2),\".\").\".0/24\") | where src_grp!=dest_grp | stats count AS linkValues BY src_grp, dest_grp | rename src_grp AS source, dest_grp AS target | sort - linkValues | head $tk_edges$  | appendpipe [| stats count BY target | rename target AS source | fields source] | table source target linkValues"
+   },
+   "name": "Segment graph"
+  },
+  "ds_matrix": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval src_grp = case(src_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", src_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(src_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(src_ip,\".\"),0,2),\".\").\".0/24\"), dest_grp = case(dest_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", dest_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(dest_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(dest_ip,\".\"),0,2),\".\").\".0/24\") | stats count AS flows BY src_grp, dest_grp | sort - flows | head 400"
+   },
+   "name": "Segment matrix"
+  },
+  "ds_segment_table": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval src_grp = case(src_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", src_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(src_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(src_ip,\".\"),0,2),\".\").\".0/24\"), dest_grp = case(dest_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", dest_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(dest_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(dest_ip,\".\"),0,2),\".\").\".0/24\") | stats count AS flows, count(eval(action=\"blocked\")) AS blocked, dc(dest_port) AS services, dc(host) AS hosts, sum(bytes) AS bytes BY src_grp, dest_grp | eval blocked_pct = round(blocked*100/flows, 1), mb = round(bytes/1048576, 1) | sort - flows | head 40"
+   },
+   "name": "Segment pairs"
+  },
+  "ds_graph_service": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval src_grp = case(src_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", src_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(src_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(src_ip,\".\"),0,2),\".\").\".0/24\"), dest_grp = case(dest_scope=\"external\", \"Internet\", \"$tk_grain$\"=\"host\", dest_ip, \"$tk_grain$\"=\"16\", mvjoin(mvindex(split(dest_ip,\".\"),0,1),\".\").\".0.0/16\", true(), mvjoin(mvindex(split(dest_ip,\".\"),0,2),\".\").\".0/24\") | eval service = if(isnull(dest_service), \"port \".dest_port, dest_service) | stats count AS linkValues BY src_grp, service | rename src_grp AS source, service AS target | sort - linkValues | head $tk_edges$  | appendpipe [| stats count BY target | rename target AS source | fields source] | table source target linkValues"
+   },
+   "name": "Segment to service graph"
+  },
+  "ds_admin_paths": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search dest_port IN (22,23,135,139,445,1433,3306,3389,5432,5985,5986,5900) action=allowed | eval service = coalesce(dest_service, \"port \".dest_port) | stats count AS flows, dc(dest_ip) AS targets, values(service) AS service, min(_time) AS first_seen, max(_time) AS last_seen BY host, dest_port | eval first_seen = strftime(first_seen, \"%F %T\"), last_seen = strftime(last_seen, \"%F %T\") | sort - targets, - flows | head 30"
+   },
+   "name": "Administrative paths"
+  },
+  "ds_fanout": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| where dest_scope=\"internal\" | stats dc(dest_ip) AS reachable_hosts, dc(dest_port) AS services, count AS flows BY host | eventstats avg(reachable_hosts) AS avg_reach, stdev(reachable_hosts) AS sd_reach | eval deviation = if(sd_reach>0, round((reachable_hosts-avg_reach)/sd_reach, 1), 0), avg_reach = round(avg_reach, 1) | where reachable_hosts > 1 | table host reachable_hosts avg_reach deviation services flows | sort - reachable_hosts | head 25"
+   },
+   "name": "Lateral reach"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-24h@h,now"
+   }
+  },
+  "input_host": {
+   "type": "input.multiselect",
+   "title": "Host",
+   "dataSources": {
+    "primary": "ds_host_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_host",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_action": {
+   "type": "input.multiselect",
+   "title": "Action",
+   "options": {
+    "token": "ms_action",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ",",
+    "items": [
+     {
+      "label": "All",
+      "value": "*"
+     },
+     {
+      "label": "Allowed",
+      "value": "allowed"
+     },
+     {
+      "label": "Blocked",
+      "value": "blocked"
+     }
+    ]
+   }
+  },
+  "input_direction": {
+   "type": "input.multiselect",
+   "title": "Direction",
+   "options": {
+    "token": "ms_direction",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ",",
+    "items": [
+     {
+      "label": "All",
+      "value": "*"
+     },
+     {
+      "label": "Inbound",
+      "value": "inbound"
+     },
+     {
+      "label": "Outbound",
+      "value": "outbound"
+     },
+     {
+      "label": "Unknown",
+      "value": "unknown"
+     }
+    ]
+   }
+  },
+  "input_grain": {
+   "type": "input.dropdown",
+   "title": "Group addresses by",
+   "options": {
+    "token": "tk_grain",
+    "defaultValue": "24",
+    "items": [
+     {
+      "label": "/24 subnet",
+      "value": "24"
+     },
+     {
+      "label": "/16 subnet",
+      "value": "16"
+     },
+     {
+      "label": "Individual host",
+      "value": "host"
+     }
+    ]
+   }
+  },
+  "input_edges": {
+   "type": "input.dropdown",
+   "title": "Edge limit",
+   "options": {
+    "token": "tk_edges",
+    "defaultValue": "60",
+    "items": [
+     {
+      "label": "60 — readable",
+      "value": "60"
+     },
+     {
+      "label": "150 — detailed",
+      "value": "150"
+     },
+     {
+      "label": "400 — dense",
+      "value": "400"
+     }
+    ]
+   }
+  },
+  "input_noise": {
+   "type": "input.dropdown",
+   "title": "Structural noise",
+   "options": {
+    "token": "tk_noise_raw",
+    "defaultValue": "is_noise=0",
+    "items": [
+     {
+      "label": "Hide broadcast / multicast / loopback",
+      "value": "is_noise=0"
+     },
+     {
+      "label": "Show everything",
+      "value": "*"
+     }
+    ]
+   }
+  }
+ },
+ "layout": {
+  "tabs": {
+   "items": [
+    {
+     "layoutId": "layout_hosts",
+     "label": "Host map"
+    },
+    {
+     "layoutId": "layout_ew",
+     "label": "East-west"
+    },
+    {
+     "layoutId": "layout_segment",
+     "label": "Segments"
+    },
+    {
+     "layoutId": "layout_service",
+     "label": "Services"
+    }
+   ]
+  },
+  "layoutDefinitions": {
+   "layout_hosts": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 110
+      }
+     },
+     {
+      "item": "kpi_hosts",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 110,
+       "w": 240,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_peers",
+      "type": "block",
+      "position": {
+       "x": 240,
+       "y": 110,
+       "w": 240,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_int",
+      "type": "block",
+      "position": {
+       "x": 480,
+       "y": 110,
+       "w": 240,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_ext",
+      "type": "block",
+      "position": {
+       "x": 720,
+       "y": 110,
+       "w": 240,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_svc",
+      "type": "block",
+      "position": {
+       "x": 960,
+       "y": 110,
+       "w": 240,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_flows",
+      "type": "block",
+      "position": {
+       "x": 1200,
+       "y": 110,
+       "w": 240,
+       "h": 150
+      }
+     },
+     {
+      "item": "hdr_g1",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 260,
+       "w": 1440,
+       "h": 60
+      }
+     },
+     {
+      "item": "viz_graph_host",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 320,
+       "w": 1440,
+       "h": 620
+      }
+     },
+     {
+      "item": "viz_fanout",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 940,
+       "w": 1440,
+       "h": 420
+      }
+     }
+    ]
+   },
+   "layout_ew": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr_g2",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 60
+      }
+     },
+     {
+      "item": "viz_graph_ew",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 60,
+       "w": 1440,
+       "h": 620
+      }
+     },
+     {
+      "item": "viz_admin",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 680,
+       "w": 1440,
+       "h": 420
+      }
+     }
+    ]
+   },
+   "layout_segment": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr_g3",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 60
+      }
+     },
+     {
+      "item": "viz_graph_segment",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 60,
+       "w": 1440,
+       "h": 560
+      }
+     },
+     {
+      "item": "viz_matrix",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 620,
+       "w": 1440,
+       "h": 460
+      }
+     },
+     {
+      "item": "viz_segment_table",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 1080,
+       "w": 1440,
+       "h": 480
+      }
+     }
+    ]
+   },
+   "layout_service": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr_g4",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 60
+      }
+     },
+     {
+      "item": "viz_graph_service",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 60,
+       "w": 1440,
+       "h": 640
+      }
+     }
+    ]
+   }
+  },
+  "globalInputs": [
+   "input_time",
+   "input_host",
+   "input_action",
+   "input_direction",
+   "input_grain",
+   "input_edges",
+   "input_noise"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

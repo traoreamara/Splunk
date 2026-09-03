@@ -1,0 +1,24 @@
+EventID,Description
+2003,A Windows Firewall setting in the profile has changed.
+2004,A rule has been added to the Windows Firewall exception list.
+2005,A rule has been modified in the Windows Firewall exception list.
+2006,A rule has been deleted from the Windows Firewall exception list.
+2007,The Windows Firewall service has started.
+2008,The Windows Firewall service has stopped.
+2009,The Windows Firewall service failed to load Group Policy.
+2010,The network profile has changed on an interface.
+2011,The Windows Firewall has blocked a connection.
+2012,The Windows Firewall has allowed a connection.
+2013,The Windows Firewall has been reset to its default settings.
+2052,A rule has been deleted in the Windows Defender Firewall exception list.
+2082,A Windows Defender Firewall setting in a profile has changed.
+2083,A Windows Defender Firewall setting has changed.
+2084,A duplicated rule has been added to the Windows Defender Firewall exception list.
+2097,A rule has been added to the Windows Defender Firewall exception list.
+2099,A rule has been modified in the Windows Defender Firewall exception list.
+4946,A change has been made to the Windows Firewall exception list. A rule was added.
+4947,A change has been made to the Windows Firewall exception list. A rule was modified.
+4948,A change has been made to the Windows Firewall exception list. A rule was deleted.
+4950,A Windows Firewall setting has changed.
+5025,The Windows Firewall service has been stopped.
+5031,The Windows Firewall service blocked an application from accepting incoming connections on the network.

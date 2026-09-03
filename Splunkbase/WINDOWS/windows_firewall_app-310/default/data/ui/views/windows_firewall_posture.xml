@@ -1,0 +1,798 @@
+<dashboard version="2" theme="dark">
+    <label>Firewall Posture</label>
+    <description>Current configuration state of every host: profile enablement, default actions, logging health and the risky rule inventory. Requires TA-windows-firewall-posture.</description>
+    <definition><![CDATA[
+{
+ "title": "Firewall Posture",
+ "description": "Current configuration state of every host: profile enablement, default actions, logging health and the risky rule inventory. Requires TA-windows-firewall-posture.",
+ "visualizations": {
+  "hdr": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Firewall Posture\nState, not events. An event stream cannot tell you that a host had its firewall off *before* Splunk arrived, nor that a silent host is silent because drop logging is disabled rather than because nothing happened.\n\nNeeds the companion **TA-windows-firewall-posture** on the forwarders.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_hosts": {
+   "type": "splunk.singlevalue",
+   "title": "Hosts inventoried",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_compliance": {
+   "type": "splunk.singlevalue",
+   "title": "Compliance",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('compliance_pct') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 1,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)",
+    "unit": "%",
+    "unitPosition": "after"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 80,
+      "value": "#e5484d"
+     },
+     {
+      "from": 80,
+      "to": 95,
+      "value": "#f5a623"
+     },
+     {
+      "from": 95,
+      "value": "#2fb67c"
+     }
+    ]
+   }
+  },
+  "kpi_disabled": {
+   "type": "splunk.singlevalue",
+   "title": "Firewall off",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('disabled_hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 1,
+      "value": "#2fb67c"
+     },
+     {
+      "from": 1,
+      "value": "#e5484d"
+     }
+    ]
+   }
+  },
+  "kpi_nolog": {
+   "type": "splunk.singlevalue",
+   "title": "Drop logging off",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('no_logging_hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 1,
+      "value": "#2fb67c"
+     },
+     {
+      "from": 1,
+      "value": "#f5a623"
+     }
+    ]
+   },
+   "description": "These hosts will never appear in the traffic dashboards, whatever they do on the network."
+  },
+  "kpi_inbound": {
+   "type": "splunk.singlevalue",
+   "title": "Default inbound allow",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('inbound_allow_hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 1,
+      "value": "#2fb67c"
+     },
+     {
+      "from": 1,
+      "value": "#e5484d"
+     }
+    ]
+   }
+  },
+  "kpi_noncompliant": {
+   "type": "splunk.singlevalue",
+   "title": "Hosts with findings",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('noncompliant_hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#f5a623"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_state": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Where the estate stands",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_matrix": {
+   "type": "splunk.column",
+   "title": "Posture by profile",
+   "dataSources": {
+    "primary": "ds_matrix"
+   },
+   "options": {
+    "stackMode": "stacked",
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#f5a623",
+     "#a175ff",
+     "#8c9199"
+    ],
+    "legendDisplay": "bottom",
+    "yAxisTitleText": "Hosts",
+    "xAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_findings": {
+   "type": "splunk.bar",
+   "title": "Findings across the estate",
+   "dataSources": {
+    "primary": "ds_findings"
+   },
+   "options": {
+    "seriesColors": [
+     "#f5a623"
+    ],
+    "legendDisplay": "off",
+    "xAxisTitleText": "Hosts affected",
+    "yAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_off": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Hosts to fix first — click a row to open its 360 view",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_offenders": {
+   "type": "splunk.table",
+   "title": "Non compliant hosts",
+   "dataSources": {
+    "primary": "ds_offenders"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "severity": {
+      "rowBackgroundColors": "> table | seriesByName(\"severity\") | matchValue(severityBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "severityBgConfig": [
+     {
+      "match": "critical",
+      "value": "#4a1015"
+     },
+     {
+      "match": "high",
+      "value": "#3a1d20"
+     },
+     {
+      "match": "medium",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "informational",
+      "value": "#1c2229"
+     }
+    ],
+    "complianceColorConfig": [
+     {
+      "to": 80,
+      "value": "#e5484d"
+     },
+     {
+      "from": 80,
+      "to": 95,
+      "value": "#f5a623"
+     },
+     {
+      "from": 95,
+      "value": "#2fb67c"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.Computer.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_blind": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Collection blind spots\nThese hosts are configured in a way that guarantees an empty traffic dashboard. Fix them before trusting any coverage number.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_blind": {
+   "type": "splunk.table",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_blind"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.Computer.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_rules": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Rule inventory\nInbound allow rules open to any address, on any port, with no application binding are the shape worth hunting.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_rule_risk": {
+   "type": "splunk.bar",
+   "title": "Rule risks across the estate",
+   "dataSources": {
+    "primary": "ds_rule_risk_summary"
+   },
+   "options": {
+    "seriesColors": [
+     "#e5484d"
+    ],
+    "legendDisplay": "off",
+    "xAxisTitleText": "Rules",
+    "yAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_rule_volume": {
+   "type": "splunk.table",
+   "title": "Hosts with the most inbound allow rules",
+   "dataSources": {
+    "primary": "ds_rule_volume"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "viz_risky_rules": {
+   "type": "splunk.table",
+   "title": "Risky rules",
+   "dataSources": {
+    "primary": "ds_risky_rules"
+   },
+   "options": {
+    "count": 20,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "severity": {
+      "rowBackgroundColors": "> table | seriesByName(\"severity\") | matchValue(severityBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "severityBgConfig": [
+     {
+      "match": "critical",
+      "value": "#4a1015"
+     },
+     {
+      "match": "high",
+      "value": "#3a1d20"
+     },
+     {
+      "match": "medium",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "informational",
+      "value": "#1c2229"
+     }
+    ],
+    "complianceColorConfig": [
+     {
+      "to": 80,
+      "value": "#e5484d"
+     },
+     {
+      "from": 80,
+      "to": 95,
+      "value": "#f5a623"
+     },
+     {
+      "from": 95,
+      "value": "#2fb67c"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  }
+ },
+ "dataSources": {
+  "ds_computer_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_posture_profiles` | stats count BY Computer | fields Computer | sort Computer"
+   },
+   "name": "Computers"
+  },
+  "ds_profiles": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_posture_profiles` | search Computer IN ($ms_computer$)"
+   },
+   "name": "Profile posture"
+  },
+  "ds_rules": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_posture_rules` | search Computer IN ($ms_computer$)"
+   },
+   "name": "Rule inventory"
+  },
+  "ds_current": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_profiles",
+    "query": "| stats latest(_time) AS _time, latest(enabled) AS enabled, latest(default_inbound_action) AS default_inbound_action, latest(default_outbound_action) AS default_outbound_action, latest(log_allowed) AS log_allowed, latest(log_blocked) AS log_blocked, latest(log_max_size_kb) AS log_max_size_kb, latest(log_file_present) AS log_file_present, latest(log_file_size_kb) AS log_file_size_kb, latest(firewall_service) AS firewall_service, latest(compliant) AS compliant, latest(findings) AS findings, latest(finding_count) AS finding_count BY Computer, profile "
+   },
+   "name": "Current profile state"
+  },
+  "ds_kpi": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_current",
+    "query": "| stats dc(Computer) AS hosts, dc(eval(if(enabled!=\"true\", Computer, null()))) AS disabled_hosts, dc(eval(if(log_blocked!=\"true\", Computer, null()))) AS no_logging_hosts, dc(eval(if(default_inbound_action=\"allow\", Computer, null()))) AS inbound_allow_hosts, dc(eval(if(compliant!=\"true\", Computer, null()))) AS noncompliant_hosts | eval compliance_pct = if(hosts>0, round((hosts-noncompliant_hosts)*100/hosts, 1), 0)"
+   },
+   "name": "KPI"
+  },
+  "ds_offenders": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_current",
+    "query": "| where compliant!=\"true\" | eval issue = findings | stats values(profile) AS profiles, values(issue) AS findings, sum(finding_count) AS finding_count, max(_time) AS last_seen BY Computer | eval last_seen = strftime(last_seen, \"%F %T\"), severity = case(match(mvjoin(findings,\",\"), \"firewall_disabled\"), \"critical\", match(mvjoin(findings,\",\"), \"default_inbound_allow\"), \"critical\", match(mvjoin(findings,\",\"), \"dropped_packets_not_logged\"), \"high\", true(), \"medium\") | table Computer severity profiles findings finding_count last_seen | sort - finding_count"
+   },
+   "name": "Non compliant hosts"
+  },
+  "ds_matrix": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_current",
+    "query": "| eval state = case(enabled!=\"true\",\"firewall off\", default_inbound_action=\"allow\",\"inbound allow\", log_blocked!=\"true\",\"no drop logging\", compliant=\"true\",\"compliant\", true(),\"minor findings\") | chart count OVER profile BY state"
+   },
+   "name": "Posture by profile"
+  },
+  "ds_findings": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_current",
+    "query": "| eval finding = split(findings, \",\") | mvexpand finding | where finding!=\"\" AND finding!=\"-\" | stats dc(Computer) AS hosts, count AS occurrences BY finding | sort - hosts"
+   },
+   "name": "Findings breakdown"
+  },
+  "ds_blind": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_current",
+    "query": "| where log_blocked!=\"true\" OR log_file_present!=\"true\" | stats values(profile) AS profiles, latest(log_blocked) AS log_blocked, latest(log_file_present) AS log_file_present, latest(log_file_name) AS log_file_name, latest(log_max_size_kb) AS log_max_size_kb BY Computer | sort Computer"
+   },
+   "name": "Blind spots"
+  },
+  "ds_rules_latest": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_rules",
+    "query": "| stats latest(_time) AS _time, latest(risks) AS risks, latest(severity) AS severity, latest(direction) AS direction, latest(rule_action) AS rule_action, latest(local_port) AS local_port, latest(remote_address) AS remote_address, latest(program) AS program, latest(profile_name) AS profile_name, latest(policy_source) AS policy_source BY Computer, rule_name | where risks!=\"-\" AND risks!=\"\" "
+   },
+   "name": "Risky rules"
+  },
+  "ds_risky_rules": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_rules_latest",
+    "query": "| table Computer severity rule_name direction rule_action local_port remote_address program profile_name policy_source risks | sort severity, Computer | head 50"
+   },
+   "name": "Risky rules table"
+  },
+  "ds_rule_risk_summary": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_rules_latest",
+    "query": "| eval risk = split(risks, \",\") | mvexpand risk | where risk!=\"\" AND risk!=\"-\" | stats dc(Computer) AS hosts, count AS rules BY risk | sort - rules"
+   },
+   "name": "Risk summary"
+  },
+  "ds_rule_volume": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_rules",
+    "query": "| stats dc(rule_name) AS rules, dc(eval(if(direction=\"inbound\" AND rule_action=\"allow\", rule_name, null()))) AS inbound_allow BY Computer | sort - inbound_allow | head 20"
+   },
+   "name": "Rule count per host"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-24h@h,now"
+   }
+  },
+  "input_computer": {
+   "type": "input.multiselect",
+   "title": "Computer",
+   "dataSources": {
+    "primary": "ds_computer_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_computer",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"Computer\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"Computer\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  }
+ },
+ "layout": {
+  "type": "grid",
+  "options": {
+   "width": 1440,
+   "submitButton": false,
+   "backgroundColor": "#0e1319"
+  },
+  "structure": [
+   {
+    "item": "hdr",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 0,
+     "w": 1440,
+     "h": 130
+    }
+   },
+   {
+    "item": "kpi_hosts",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 130,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_compliance",
+    "type": "block",
+    "position": {
+     "x": 240,
+     "y": 130,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_disabled",
+    "type": "block",
+    "position": {
+     "x": 480,
+     "y": 130,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_nolog",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 130,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_inbound",
+    "type": "block",
+    "position": {
+     "x": 960,
+     "y": 130,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_noncompliant",
+    "type": "block",
+    "position": {
+     "x": 1200,
+     "y": 130,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "hdr_state",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 280,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_matrix",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 320,
+     "w": 720,
+     "h": 340
+    }
+   },
+   {
+    "item": "viz_findings",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 320,
+     "w": 720,
+     "h": 340
+    }
+   },
+   {
+    "item": "hdr_off",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 660,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_offenders",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 700,
+     "w": 1440,
+     "h": 420
+    }
+   },
+   {
+    "item": "hdr_blind",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1120,
+     "w": 1440,
+     "h": 60
+    }
+   },
+   {
+    "item": "viz_blind",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1180,
+     "w": 1440,
+     "h": 360
+    }
+   },
+   {
+    "item": "hdr_rules",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1540,
+     "w": 1440,
+     "h": 60
+    }
+   },
+   {
+    "item": "viz_rule_risk",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1600,
+     "w": 720,
+     "h": 340
+    }
+   },
+   {
+    "item": "viz_rule_volume",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 1600,
+     "w": 720,
+     "h": 340
+    }
+   },
+   {
+    "item": "viz_risky_rules",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1940,
+     "w": 1440,
+     "h": 560
+    }
+   }
+  ],
+  "globalInputs": [
+   "input_time",
+   "input_computer"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

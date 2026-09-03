@@ -1,0 +1,12 @@
+<nav search_view="search">
+  <collection label="Network Traffic">
+	<view name="windows_host_traffic_watch" />
+    <view name="Windows_host_traffic_Geagraphic_view" />
+  </collection> 
+  <view name="setup_page_dashboard"/>
+  <collection label="Other Ressources">
+    <view name="search" />
+  	<view name="reports" />
+  	<view name="dashboards" />
+  </collection>
+</nav>

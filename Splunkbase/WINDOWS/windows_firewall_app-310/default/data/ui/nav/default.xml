@@ -1,0 +1,32 @@
+<nav search_view="search" color="#0b5fff">
+  <view name="windows_firewall_overview" default="true" />
+  <collection label="Traffic">
+    <view name="windows_host_traffic_watch_sankey" />
+    <view name="windows_host_traffic_table_view" />
+  </collection>
+  <collection label="Investigate">
+    <view name="windows_firewall_host_view" />
+    <view name="windows_firewall_peer_view" />
+    <view name="windows_firewall_process_view" />
+  </collection>
+  <view name="windows_firewall_threat_hunting" />
+  <collection label="Configuration">
+    <view name="windows_firewall_changes" />
+    <view name="windows_firewall_posture" />
+  </collection>
+  <collection label="Detections &amp; Reports">
+    <saved source="unclassified" match="Windows Firewall" />
+    <divider />
+    <view name="reports" />
+    <view name="alerts" />
+  </collection>
+  <collection label="Other resources">
+    <view name="search" />
+    <view name="dashboards" />
+    <a href="/manager/windows_firewall_app/data/lookup-table-files">Manage lookups</a>
+    <a href="/manager/windows_firewall_app/admin/macros">Manage macros</a>
+    <a href="/manager/windows_firewall_app/data/models">Manage data models</a>
+  </collection>
+  <view name="documentation" />
+  <view name="setup_page_dashboard" />
+</nav>

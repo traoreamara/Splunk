@@ -1,0 +1,427 @@
+<dashboard hideFilters="true" theme="dark" version="1.1" stylesheet="docstyles.css">
+  <label>Documentation</label>
+  <row>
+    <panel>
+      <html>
+        <div class="wfo-doc">
+
+          <h1>What this app does<span class="wfo-badge">v4.0.0</span></h1>
+          <p>
+            Microsoft Windows Firewall Observability collects, parses, normalises and visualises two
+            complementary data sources from your Windows workstations and servers:
+          </p>
+          <table>
+            <tr><th>Data source</th><th>What it tells you</th><th>Sourcetype</th></tr>
+            <tr>
+              <td><code>pfirewall.log</code></td>
+              <td>Every connection allowed or dropped by Windows Defender Firewall</td>
+              <td><code>windows:pfirewall</code></td>
+            </tr>
+            <tr>
+              <td>Windows Event Log<br/><em>Windows Firewall With Advanced Security / Firewall</em></td>
+              <td>Every change to firewall settings, rules and service state</td>
+              <td><code>XmlWinEventLog:...</code></td>
+            </tr>
+          </table>
+          <p>
+            Knowledge objects are compliant with the Splunk Common Information Model:
+            <strong>Network Traffic</strong> for the connection log and <strong>Change</strong> for the
+            configuration events.
+          </p>
+
+          <h1>Installation</h1>
+          <ol>
+            <li>Install this app on your <strong>search heads</strong>. The dashboards and detections live there.
+                Version 4.0.0 requires <strong>Splunk 10.4 or later</strong> — its dashboards use tabs, network
+                graphs, timelines and trellis layouts. On 9.x, install version 3.1.0 instead: same collection,
+                same detections, flat dashboards.</li>
+            <li>Install <a href="https://splunkbase.splunk.com/app/742" target="_blank">Splunk Add-on for Microsoft Windows</a> (8.9.0 or later) on the same tier. It provides the Windows Event Log field extractions this app builds on.</li>
+            <li>Open <strong>Configuration</strong> in the app navigation bar and declare the index that receives the firewall data. This writes the <code>windows_firewall_index</code> macro.</li>
+            <li>Deploy the <code>default/inputs.conf</code> stanzas of this app to every Windows forwarder, adapting the <code>index</code> value to your indexing policy. Restart or reload the forwarder afterwards.</li>
+            <li>Enable firewall logging on the Windows hosts (next section).</li>
+          </ol>
+          <div class="wfo-note">
+            <strong>Upgrading from 2.x?</strong> The setup page of version 2.x wrote a macro named
+            <code>windows_pfirewall_index</code> while every search used <code>windows_firewall_index</code>,
+            so the configured index was silently ignored. This is fixed in 3.0.0 — re-run the setup page
+            once after upgrading.
+          </div>
+
+          <h1>Where to install what</h1>
+          <p>
+            Install a component on every tier that <strong>parses</strong> or
+            <strong>searches</strong> the data. Deploy the inputs only where it is
+            <strong>collected</strong>.
+          </p>
+          <table>
+            <tr><th>Component</th><th>This app</th><th>Posture add-on</th><th>Inputs enabled</th></tr>
+            <tr><td>Universal forwarder (Windows)</td><td>inputs.conf only</td><td>full add-on</td><td><strong>yes</strong></td></tr>
+            <tr><td>Heavy forwarder, if any</td><td>yes</td><td>yes</td><td>no</td></tr>
+            <tr><td>Indexer</td><td>yes*</td><td>yes*</td><td>no</td></tr>
+            <tr><td>Search head</td><td>yes</td><td>yes</td><td>no</td></tr>
+          </table>
+          <p>* Not needed on the indexers if a heavy forwarder sits in front of them — whichever
+             component parses first is the one that needs it.</p>
+          <div class="wfo-note">
+            <strong>Why the indexer, and not only the search head?</strong> A universal forwarder does
+            not parse: it reads and ships. The first parsing component downstream decides where an
+            event starts and ends and what its timestamp is. For this app it also applies
+            <code>TRANSFORMS-wfo_drop_headers</code>, which sends the four W3C header lines of
+            <code>pfirewall.log</code> to nullQueue. Install on the search head alone and those
+            header lines keep being indexed as events, skewing every count.
+          </div>
+          <p>
+            With a single forwarder and a single Splunk instance — the most common setup — that means
+            two installations: the <code>inputs.conf</code> stanzas on the Windows forwarder, and the
+            full app on the Splunk instance, which carries both the indexer and the search head role.
+          </p>
+
+          <h1>Enable firewall logging on Windows</h1>
+          <p>Through the console:</p>
+          <ol>
+            <li>Press <code>Windows + R</code>, type <code>wf.msc</code> and press Enter.</li>
+            <li>Right-click <em>Windows Defender Firewall with Advanced Security on Local Computer</em> and choose <em>Properties</em>.</li>
+            <li>For each profile tab (Domain, Private, Public), click <em>Customize</em> under <em>Logging</em>.</li>
+            <li>Set <em>Log dropped packets</em> and <em>Log successful connections</em> to <strong>Yes</strong>.</li>
+            <li>Raise <em>Size limit</em> to at least <strong>20480 KB</strong> so the file does not rotate every few minutes.</li>
+          </ol>
+          <p>Or through PowerShell, on all three profiles at once:</p>
+          <pre><code>Set-NetFirewallProfile -All -LogAllowed True -LogBlocked True -LogMaxSizeKilobytes 20480 -LogFileName "%systemroot%\System32\LogFiles\Firewall\pfirewall.log"</code></pre>
+          <p>
+            Deliberately on one line: backtick continuations do not always survive a copy and paste
+            into a console. Run it from an elevated PowerShell. If the log path is already the
+            default, <code>-LogFileName</code> can be dropped. Check the result with:
+          </p>
+          <pre><code>Get-NetFirewallProfile -All | Select-Object Name,Enabled,LogAllowed,LogBlocked,LogMaxSizeKilobytes,LogFileName | Format-Table -AutoSize</code></pre>
+          <p>Or through Group Policy: <em>Computer Configuration &gt; Policies &gt; Windows Settings &gt;
+          Security Settings &gt; Windows Defender Firewall with Advanced Security &gt; Windows Defender
+          Firewall Properties &gt; (profile) &gt; Logging &gt; Customize</em>.</p>
+          <div class="wfo-warn">
+            The Splunk forwarder service account must be able to read
+            <code>C:\Windows\System32\LogFiles\Firewall\</code>. Running the forwarder as
+            <em>Local System</em> is the simplest way to guarantee that.
+          </div>
+
+          <h1>Searching the data</h1>
+          <p>Two macros carry the base filter. Prefer them over hard-coded index and sourcetype clauses.</p>
+          <table>
+            <tr><th>Macro</th><th>Expands to</th></tr>
+            <tr><td><code>`wfo_traffic`</code></td><td>The connection log of every configured index</td></tr>
+            <tr><td><code>`wfo_changes`</code></td><td>The firewall configuration events of every configured index</td></tr>
+            <tr><td><code>`ip_whitelist`</code></td><td>Noise filter — drops events whose source or destination matches <code>lookups/whitelist_ip_ranges.csv</code></td></tr>
+            <tr><td><code>`wfo_internal_ip(ip)`</code></td><td>Boolean helper, true when the address is in one of your internal ranges</td></tr>
+            <tr><td><code>`windows_firewall_index`</code></td><td>The index list, written by the setup page</td></tr>
+            <tr><td><code>`wfo_wfp`</code></td><td>Windows Filtering Platform events, normalised — carries <code>process_name</code></td></tr>
+            <tr><td><code>`wfo_wfp_index`</code></td><td>The index holding your Security events</td></tr>
+            <tr><td><code>`wfo_posture_profiles`</code>, <code>`wfo_posture_rules`</code></td><td>Posture inventory from the companion add-on</td></tr>
+            <tr><td><code>`wfo_summariesonly`</code></td><td>Acceleration switch used by the Overview</td></tr>
+            <tr><td><code>`wfo_datamodel`</code></td><td>Root of the shipped data model</td></tr>
+          </table>
+          <pre><code># Blocked outbound traffic leaving to the Internet
+`wfo_traffic` action=blocked direction=outbound dest_scope=external `ip_whitelist`
+| stats count by host, dest_ip, dest_port, dest_service
+| sort - count
+
+# Everything that changed the firewall policy in the last 7 days
+`wfo_changes` change_type=firewall-policy
+| table _time Computer result RuleName ModifyingUser ModifyingApplication
+| sort - _time</code></pre>
+
+
+
+          <h1>The nine dashboards</h1>
+          <table>
+            <tr><th>Dashboard</th><th>What it answers</th><th>Tabs</th></tr>
+            <tr><td><strong>Firewall Overview</strong></td>
+                <td>Is the estate healthy, and is my collection complete?</td>
+                <td>Summary · Collection health · Geography &amp; changes</td></tr>
+            <tr><td><strong>Traffic Explorer</strong></td>
+                <td>What is flowing, from which host to which service, and with what verdict?</td>
+                <td>Flow map · Volume · Breakdown</td></tr>
+            <tr><td><strong>Traffic Investigator</strong></td>
+                <td>Give me the rows, filtered precisely.</td><td>single page</td></tr>
+            <tr><td><strong>Segmentation Map</strong></td>
+                <td>Who can reach whom, across which boundary, on which service?</td>
+                <td>Host map · East-west · Segments · Services</td></tr>
+            <tr><td><strong>Host 360</strong></td>
+                <td>Everything about one machine.</td>
+                <td>Activity · Peers &amp; services · Processes · Changes</td></tr>
+            <tr><td><strong>Peer Pivot</strong></td>
+                <td>Everything one address did, estate wide.</td><td>single page</td></tr>
+            <tr><td><strong>Process Attribution</strong></td>
+                <td>Which binary opened the connection?</td>
+                <td>Process map · Hunting · Outbound &amp; listeners</td></tr>
+            <tr><td><strong>Firewall Changes</strong></td>
+                <td>Who changed what, and how dangerous was it?</td>
+                <td>Activity · Posture over time · Actors · Full history</td></tr>
+            <tr><td><strong>Firewall Posture</strong></td>
+                <td>Which hosts are unprotected <em>right now</em>?</td>
+                <td>Compliance · Blind spots · Rule inventory</td></tr>
+          </table>
+
+          <h2>Reading the Segmentation Map</h2>
+          <p>
+            The east-west tab is the one to start with. It removes Internet traffic, so what remains is
+            exactly the movement a segmentation policy is meant to constrain. Three questions it answers
+            quickly:
+          </p>
+          <ul>
+            <li><strong>Which machines reach far?</strong> The <em>lateral reach</em> table scores each host
+                against the estate average in standard deviations. A workstation three deviations above its
+                peers is worth explaining before it is worth blocking.</li>
+            <li><strong>Which boundaries are actually crossed?</strong> The flow matrix on the Segments tab
+                shows one dot per existing path. An empty cell is a boundary nothing crossed during the
+                period — the cheapest rule you will ever write.</li>
+            <li><strong>What would break?</strong> Before blocking a path, filter the Traffic Explorer on that
+                source and destination. What you see is what stops working.</li>
+          </ul>
+          <div class="wfo-note">
+            Grouping is by /24 by default. Switch to /16 for a broad first pass on a large estate, or to
+            individual hosts for a small one. <code>Internet</code> collapses every external address into a
+            single node so it does not swamp the picture.
+          </div>
+
+          <h2>Graph readability</h2>
+          <p>
+            Every network graph is built from the top N flows, set by the <em>Edge limit</em> input. Sixty
+            edges stays readable; four hundred is for export rather than for reading on screen. Drag a node
+            to untangle a cluster, and switch layout when the shape is not helping: <em>force</em> for
+            clusters, <em>hierarchical</em> for flows that go one way.
+          </p>
+
+          <h2>Sections that disappear</h2>
+          <p>
+            Panels that depend on an optional data source hide themselves when that source returns nothing.
+            The <em>Optional sections</em> input removes their headers as well, so a deployment that collects
+            only <code>pfirewall.log</code> sees a page with no gaps in it.
+          </p>
+
+          <h1>Going further — the three optional data sources</h1>
+          <p>
+            The app works with the two mandatory sources above. Three optional additions each unlock
+            a specific view. None of them is required, and none of them changes anything if left off.
+          </p>
+          <table>
+            <tr><th>Add</th><th>Unlocks</th><th>Cost</th></tr>
+            <tr>
+              <td><strong>WFP audit events</strong><br/>Security 5157 and 5152, optionally 5156</td>
+              <td><em>Process Attribution</em> view and the Processes panel of <em>Host 360</em> and
+                  <em>Peer Pivot</em>: which binary opened the connection.</td>
+              <td>5157 and 5152 are moderate. <strong>5156 is very verbose</strong> — it logs every
+                  permitted connection. Start without it.</td>
+            </tr>
+            <tr>
+              <td><strong>TA-windows-firewall-posture</strong><br/>on the forwarders,
+                  <em>inputs enabled</em></td>
+              <td><em>Firewall Posture</em> view: which hosts are unprotected right now, and which
+                  ones cannot log at all.</td>
+              <td>~144 small events per host per day, plus one rule inventory per day.</td>
+            </tr>
+            <tr>
+              <td><strong>Data model acceleration</strong></td>
+              <td>Makes the Overview instant on large estates.</td>
+              <td>Indexer CPU and summary disk. Start with a 7 day summary range.</td>
+            </tr>
+          </table>
+
+          <h2>Enabling process attribution</h2>
+          <p>Audit policy on the monitored hosts:</p>
+          <pre><code># Blocked connections and dropped packets - moderate volume
+auditpol /set /subcategory:"Filtering Platform Connection" /failure:enable
+auditpol /set /subcategory:"Filtering Platform Packet Drop" /failure:enable
+
+# Allowed connections (event 5156) - VERY verbose, enable deliberately
+# auditpol /set /subcategory:"Filtering Platform Connection" /success:enable</code></pre>
+          <p>
+            Then point the <code>wfo_wfp_index</code> macro at the index holding your Security
+            events — from the Configuration page, or directly in
+            <em>Settings &gt; Advanced search &gt; Search macros</em>. The app reads whatever
+            sourcetype you already use (<code>XmlWinEventLog:Security</code> or
+            <code>WinEventLog:Security</code>) and normalises everything at search time, so there is
+            nothing to re-ingest and no conflict with Splunk Add-on for Microsoft Windows.
+          </p>
+          <div class="wfo-warn">
+            On a domain controller, event 5156 can reach tens of thousands of events per minute.
+            Enable the success audit on a single test host first and measure before rolling out.
+          </div>
+
+          <h2>Enabling the posture add-on</h2>
+          <p>
+            <code>TA-windows-firewall-posture</code> ships with both of its inputs
+            <strong>disabled</strong> — installing an add-on should never start a collection without
+            an explicit decision. On the forwarders, create
+            <code>TA-windows-firewall-posture/local/inputs.conf</code>:
+          </p>
+          <pre><code>[powershell://wfo_firewall_profiles]
+disabled = 0
+index = windows_firewall
+
+[powershell://wfo_firewall_rules]
+disabled = 0
+index = windows_firewall</code></pre>
+          <p>
+            Use the same index as the <code>windows_firewall_index</code> macro. Then confirm from
+            the search bar:
+          </p>
+          <pre><code>| `wfo_posture_profiles` | stats count by Computer, profile</code></pre>
+          <div class="wfo-note">
+            The add-on collects through the <strong>NetSecurity PowerShell cmdlets</strong>, not
+            <code>netsh</code>. Cmdlets return objects whose property names are identical on every
+            Windows installation; <code>netsh</code> prints localised text, so a collector parsing it
+            silently returns nothing on a non-English system.
+          </div>
+
+          <h2>Enabling acceleration</h2>
+          <ol>
+            <li><em>Settings &gt; Data models &gt; Windows Firewall Observability &gt; Edit &gt; Edit acceleration</em>, tick Accelerate, pick a summary range (7 days is a good start).</li>
+            <li>Wait for the model to build — the same page shows the progress.</li>
+            <li>Return to the app Configuration page and set <em>Data model accelerated</em> to <code>yes</code>. This flips the <code>wfo_summariesonly</code> macro.</li>
+          </ol>
+          <div class="wfo-note">
+            Until step 3, the Overview still works — it just searches raw data. If you set it to
+            <code>yes</code> before acceleration has built, the Overview will show nothing.
+          </div>
+
+          <h2>Two layers of noise filtering</h2>
+          <table>
+            <tr><th>Layer</th><th>Where</th><th>Filters</th></tr>
+            <tr>
+              <td><code>is_noise</code></td>
+              <td>Overview (works inside <code>tstats</code>)</td>
+              <td>Fixed, universal noise: loopback, link-local, multicast, broadcast, reserved.</td>
+            </tr>
+            <tr>
+              <td><code>`ip_whitelist`</code></td>
+              <td>Traffic Explorer, Investigator, Threat Hunting, detections</td>
+              <td>Whatever you put in <code>whitelist_ip_ranges.csv</code> — your own trusted ranges.</td>
+            </tr>
+          </table>
+          <p>
+            A search-time lookup cannot run inside <code>tstats</code>, which is why the two exist.
+            Ranges you add to the CSV are filtered out of the raw-search views but not of the
+            Overview counters.
+          </p>
+
+          <h1>Investigation workflow</h1>
+          <p>Every table drills through instead of dumping you into a raw search:</p>
+          <pre><code>Overview          --(click a host)-----&gt;  Host 360  --(click a peer)--&gt;  Peer Pivot
+Threat Hunting    --(click a finding)--&gt;  Host 360   or  Peer Pivot
+Segmentation Map  --(click a host)-----&gt;  Host 360
+Firewall Posture  --(click a host)-----&gt;  Host 360
+Host 360          --(click a process)--&gt;  Process Attribution</code></pre>
+          <p>The time range follows you through each hop.</p>
+
+          <h1>Fields you can rely on</h1>
+          <table>
+            <tr><th>Field</th><th>Values</th><th>Notes</th></tr>
+            <tr><td><code>action</code></td><td>allowed, blocked</td><td>CIM normalised</td></tr>
+            <tr><td><code>direction</code></td><td>inbound, outbound, unknown</td><td>Derived from the log <em>path</em> column</td></tr>
+            <tr><td><code>src_scope</code>, <code>dest_scope</code></td><td>internal, external</td><td>Based on RFC1918 plus your setup ranges</td></tr>
+            <tr><td><code>dest_service</code></td><td>https, rdp, smb, ...</td><td>Resolved from port and transport</td></tr>
+            <tr><td><code>bytes</code></td><td>numeric</td><td>Packet size &#8212; Windows fills this in only for packets it <strong>drops</strong>; allowed connections are logged with <code>-</code>, so there is no byte volume for permitted traffic in this source</td></tr>
+            <tr><td><code>severity</code></td><td>critical, high, medium, informational</td><td>Configuration events only</td></tr>
+            <tr><td><code>event_description</code></td><td>decoded event text</td><td>From the EventID lookup. Named this way so it does not clobber the add-on's own <code>Description</code></td></tr>
+            <tr><td><code>ModifyingUser</code></td><td>account name</td><td>A raw SID here means the forwarder is not resolving directory objects — see below</td></tr>
+            <tr><td><code>result</code></td><td>created:allow, firewall disabled, ...</td><td>Human readable outcome of a change</td></tr>
+            <tr><td><code>is_noise</code></td><td>0 or 1</td><td>Loopback / link-local / multicast / broadcast / reserved</td></tr>
+            <tr><td><code>process_name</code>, <code>process_path</code></td><td>svchost.exe, ...</td><td>WFP events only, through <code>`wfo_wfp`</code></td></tr>
+            <tr><td><code>wfp_operation</code></td><td>connection allowed, listen blocked, ...</td><td>WFP events only</td></tr>
+            <tr><td><code>compliant</code>, <code>findings</code></td><td>true/false, list</td><td>Posture add-on only</td></tr>
+          </table>
+
+          <h1>Detections</h1>
+          <p>
+            The app ships 24 saved searches. All alerts are <strong>disabled by default</strong> — review the
+            thresholds against your own baseline, then enable them from
+            <em>Settings &gt; Searches, reports and alerts</em>. Highest value first:
+          </p>
+          <ul>
+            <li><strong>Firewall Disabled On Host</strong> and <strong>Default Inbound Action Set To Allow</strong> — the two changes that silently remove all protection.</li>
+            <li><strong>Administrative Protocol Exposed</strong> — RDP, SMB, SSH, WinRM or a database port answering a public address.</li>
+            <li><strong>Possible C2 Beaconing</strong> — outbound sessions at a near constant interval.</li>
+            <li><strong>Port Scan</strong> and <strong>Network Sweep Detected</strong> — reconnaissance visible in the denied traffic.</li>
+            <li><strong>Host Stopped Sending Firewall Logs</strong> — collection health, so an empty dashboard never gets mistaken for a quiet network.</li>
+          </ul>
+
+          <h1>Tuning the noise</h1>
+          <p>
+            <code>lookups/whitelist_ip_ranges.csv</code> drives the <code>`ip_whitelist`</code> macro and the
+            <em>Noise filter</em> input present on every dashboard. Add your own trusted ranges to it:
+          </p>
+          <pre><code>ip_range,network,service
+10.20.0.0/16,Corporate,Datacenter
+192.168.50.0/24,Corporate,Backup network</code></pre>
+          <p>
+            Matching is done in CIDR on both <code>src_ip</code> and <code>dest_ip</code>: an event is dropped
+            as soon as either end belongs to a listed range.
+          </p>
+
+          <h1>Troubleshooting</h1>
+          <table>
+            <tr><th>Symptom</th><th>What to check</th></tr>
+            <tr>
+              <td>Dashboards are empty</td>
+              <td>Run the <em>Windows Firewall - Data Collection Health</em> report. If it returns nothing, the index declared in the setup page does not match the one used by your forwarders.</td>
+            </tr>
+            <tr>
+              <td>Traffic stops after a while, then resumes</td>
+              <td>The log file rotated. Version 3.0.0 sets <code>initCrcLength = 2048</code> in <code>inputs.conf</code> precisely to survive that — make sure your forwarders received the new file.</td>
+            </tr>
+            <tr>
+              <td>Fields are shifted by one column</td>
+              <td>Older Windows builds log 17 columns, newer ones 18. Version 3.0.0 uses a regex extraction that handles both. Confirm you are not overriding <code>REPORT-Network_Traffic</code> locally.</td>
+            </tr>
+            <tr>
+              <td>No configuration change events</td>
+              <td>Splunk Add-on for Microsoft Windows is required for the Event Log field extractions, and the WinEventLog input must use <code>renderXml = 1</code>.</td>
+            </tr>
+            <tr>
+              <td>Traffic views work but <strong>Firewall Changes</strong> is empty</td>
+              <td>Three things must all be true. <strong>1)</strong> Splunk Add-on for Microsoft
+                  Windows is installed on the search head and indexer — without it the events are
+                  indexed as raw XML with no fields. <strong>2)</strong> The
+                  <code>WinEventLog://</code> stanza is deployed on the forwarder —
+                  <code>default/inputs.conf</code> holds <em>two</em> stanzas and it is easy to copy
+                  only the file monitor. Note that a <code>WinEventLog://</code> input starts only on
+                  a full service restart, not on a config reload. <strong>3)</strong> The channel has
+                  something to say — a firewall channel emits events only when the configuration
+                  <em>changes</em>, so a quiet machine is legitimately silent. Force two events with
+                  <code>New-NetFirewallRule</code> then <code>Remove-NetFirewallRule</code>.</td>
+            </tr>
+            <tr>
+              <td>Searching by <code>sourcetype</code> finds no change events</td>
+              <td>With <code>renderXml = 1</code> the sourcetype is the generic
+                  <code>XmlWinEventLog</code>; the channel name lives in the <strong>source</strong>.
+                  That is why the <code>`wfo_changes`</code> macro filters on <code>source</code>.</td>
+            </tr>
+            <tr>
+              <td><code>ModifyingUser</code> shows a SID such as <code>S-1-5-21-...</code></td>
+              <td>The forwarder is not resolving directory objects.
+                  <code>default/inputs.conf</code> sets <code>evt_resolve_ad_obj = 1</code> on the
+                  firewall channels — check the forwarder has that version, then restart it.</td>
+            </tr>
+            <tr>
+              <td>No posture data, and <code>splunkd.log</code> on the forwarder says
+                  <em>running scripts is disabled on this system</em></td>
+              <td>The Windows PowerShell execution policy is <code>Restricted</code> — the default on
+                  client editions. It blocks the posture add-on and Splunk's own PowerShell harness.
+                  Check the effective scope with <code>Get-ExecutionPolicy -List</code>, then set
+                  <code>RemoteSigned</code> per machine or by GPO. See the add-on README.</td>
+            </tr>
+            <tr>
+              <td>Timestamps are off</td>
+              <td>Windows writes the firewall log in local time. Set <code>TZ</code> on the host props or on the forwarder if it differs from the indexer.</td>
+            </tr>
+          </table>
+
+          <h1>Support and licensing</h1>
+          <p>
+            Published on <a href="https://splunkbase.splunk.com/app/7790" target="_blank">Splunkbase</a>.
+            Licensed under the
+            <a href="https://www.splunk.com/en_us/legal/splunk-general-terms.html" target="_blank">Splunk General Terms</a>.
+          </p>
+        </div>
+      </html>
+    </panel>
+  </row>
+</dashboard>

@@ -1,0 +1,1280 @@
+<dashboard version="2" theme="dark">
+    <label>Threat Hunting</label>
+    <description>Reconnaissance, beaconing, Internet exposure and data movement hunts, one per tab, with network graphs and drilldowns into Host 360 and Peer Pivot.</description>
+    <definition><![CDATA[
+{
+ "title": "Threat Hunting",
+ "description": "Reconnaissance, beaconing, Internet exposure and data movement hunts, one per tab, with network graphs and drilldowns into Host 360 and Peer Pivot.",
+ "visualizations": {
+  "hdr": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Threat Hunting\nFour hunts over the firewall log, one per tab: reconnaissance, command and control, Internet exposure and data movement. Every finding drills into Host 360 or Peer Pivot.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_denied_out": {
+   "type": "splunk.singlevalue",
+   "title": "Denied outbound to Internet",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('denied_out') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#e5484d"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_inbound": {
+   "type": "splunk.singlevalue",
+   "title": "Inbound accepted from Internet",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('inbound_ext') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#f5a623"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_peers": {
+   "type": "splunk.singlevalue",
+   "title": "External peers",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('ext_peers') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_out": {
+   "type": "splunk.singlevalue",
+   "title": "External addresses reached",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('reached_out') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#31c2c9"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_recon": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Reconnaissance\nDenied traffic concentrated in a short window. Adjust the threshold with the input above.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_scan_timeline": {
+   "type": "splunk.timeline",
+   "title": "Scan activity over time",
+   "dataSources": {
+    "primary": "ds_scan_timeline"
+   },
+   "options": {
+    "backgroundColor": "transparent",
+    "legendDisplay": "right",
+    "category": "> primary | seriesByName('intensity')",
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#4fa3ff",
+     "#f5a623",
+     "#a175ff",
+     "#31c2c9",
+     "#e05f9e",
+     "#8c9199"
+    ]
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "One lane per intensity band. Needs at least one window above the threshold.",
+   "hideWhenNoData": true
+  },
+  "viz_portscan": {
+   "type": "splunk.table",
+   "title": "Vertical port scans — many ports, one target",
+   "dataSources": {
+    "primary": "ds_portscan"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_peer_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_peer=$row.src_ip.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_sweep": {
+   "type": "splunk.table",
+   "title": "Horizontal sweeps — one port, many targets",
+   "dataSources": {
+    "primary": "ds_sweep"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_peer_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_peer=$row.src_ip.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_recon_punch": {
+   "type": "splunk.punchcard",
+   "title": "When does denied traffic happen?",
+   "dataSources": {
+    "primary": "ds_recon_punch"
+   },
+   "options": {
+    "seriesColors": [
+     "#e5484d"
+    ],
+    "backgroundColor": "transparent"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_c2": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Command and control\nOutbound sessions repeating at a near constant interval. `jitter` is the standard deviation divided by the average interval — below 0.1 is almost never human.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_c2_graph": {
+   "type": "splunk.networkGraph",
+   "title": "Beaconing map — hosts and the addresses they call back to",
+   "dataSources": {
+    "primary": "ds_c2_graph"
+   },
+   "options": {
+    "layout": "force",
+    "linkStyle": "c",
+    "linkDirection": "one-way",
+    "nodeColors": "#e5484d",
+    "backgroundColor": "transparent",
+    "nodeHorizontalPadding": 60,
+    "linkValues": "> primary | seriesByName('linkValues')"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "A single external node with many host edges is either your management tooling or your incident.",
+   "hideWhenNoData": true
+  },
+  "viz_beacon": {
+   "type": "splunk.table",
+   "title": "Beaconing candidates",
+   "dataSources": {
+    "primary": "ds_beacon"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true,
+    "columnFormat": {
+     "jitter": {
+      "rowBackgroundColors": "> table | seriesByName(\"jitter\") | rangeValue(jitterColorConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "jitterColorConfig": [
+     {
+      "to": 0.05,
+      "value": "#4a1015"
+     },
+     {
+      "from": 0.05,
+      "to": 0.12,
+      "value": "#3a1d20"
+     },
+     {
+      "from": 0.12,
+      "value": "#1c2229"
+     }
+    ],
+    "sessionColorConfig": [
+     {
+      "to": 200,
+      "value": "#1c2229"
+     },
+     {
+      "from": 200,
+      "to": 1000,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 1000,
+      "value": "#4a1015"
+     }
+    ],
+    "srcColorConfig": [
+     {
+      "to": 5,
+      "value": "#1c2229"
+     },
+     {
+      "from": 5,
+      "to": 50,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 50,
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_peer_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_peer=$row.dest_ip.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_denied_out": {
+   "type": "splunk.table",
+   "title": "Hosts repeatedly denied outbound",
+   "dataSources": {
+    "primary": "ds_denied_out"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_lolbin": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Which binary — needs Windows Filtering Platform audit events",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   },
+   "containerOptions": {
+    "visibility": {
+     "showConditions": [
+      "condition_optional"
+     ],
+     "showWhenConditions": "all-true"
+    }
+   }
+  },
+  "viz_lolbin": {
+   "type": "splunk.table",
+   "title": "Living-off-the-land binaries reaching the Internet",
+   "dataSources": {
+    "primary": "ds_lolbin"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "PowerShell, certutil, mshta, regsvr32 and friends. Legitimate on some hosts, a strong signal on most.",
+   "hideWhenNoData": true,
+   "containerOptions": {
+    "visibility": {
+     "showConditions": [
+      "condition_optional"
+     ],
+     "showWhenConditions": "all-true"
+    }
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_expo": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Internet exposure\nWhat the outside world can reach, and which ports only a couple of machines ever use.",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_exposure_graph": {
+   "type": "splunk.networkGraph",
+   "title": "Who reaches your hosts from the Internet",
+   "dataSources": {
+    "primary": "ds_exposure_graph"
+   },
+   "options": {
+    "layout": "hierarchical",
+    "linkStyle": "z",
+    "linkDirection": "one-way",
+    "nodeColors": "#f5a623",
+    "backgroundColor": "transparent",
+    "nodeHorizontalPadding": 60,
+    "linkValues": "> primary | seriesByName('linkValues')"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "hideWhenNoData": true
+  },
+  "viz_admin_exposed": {
+   "type": "splunk.table",
+   "title": "Administrative protocols answering public addresses",
+   "dataSources": {
+    "primary": "ds_admin_exposed"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true,
+    "columnFormat": {
+     "sources": {
+      "rowBackgroundColors": "> table | seriesByName(\"sources\") | rangeValue(srcColorConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "jitterColorConfig": [
+     {
+      "to": 0.05,
+      "value": "#4a1015"
+     },
+     {
+      "from": 0.05,
+      "to": 0.12,
+      "value": "#3a1d20"
+     },
+     {
+      "from": 0.12,
+      "value": "#1c2229"
+     }
+    ],
+    "sessionColorConfig": [
+     {
+      "to": 200,
+      "value": "#1c2229"
+     },
+     {
+      "from": 200,
+      "to": 1000,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 1000,
+      "value": "#4a1015"
+     }
+    ],
+    "srcColorConfig": [
+     {
+      "to": 5,
+      "value": "#1c2229"
+     },
+     {
+      "from": 5,
+      "to": 50,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 50,
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "description": "RDP, SMB, SSH, WinRM or a database port. Treat as an exposure incident until proven otherwise.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_exposed": {
+   "type": "splunk.table",
+   "title": "All services accepting public inbound traffic",
+   "dataSources": {
+    "primary": "ds_exposed"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_rare": {
+   "type": "splunk.table",
+   "title": "Rare outbound destination ports",
+   "dataSources": {
+    "primary": "ds_rare_ports"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "Rarity across the estate is the cheapest anomaly signal you have.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "hdr_data": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Data movement",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_exfil_time": {
+   "type": "splunk.area",
+   "title": "Outbound sessions to external addresses",
+   "dataSources": {
+    "primary": "ds_exfil_time"
+   },
+   "options": {
+    "stackMode": "stacked",
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#4fa3ff",
+     "#f5a623",
+     "#a175ff",
+     "#31c2c9",
+     "#e05f9e",
+     "#8c9199"
+    ],
+    "legendDisplay": "right",
+    "yAxisTitleText": "Connections",
+    "xAxisTitleText": "",
+    "backgroundColor": "transparent"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "Session counts, not bytes: the firewall log records a packet size only for packets it drops."
+  },
+  "viz_exfil": {
+   "type": "splunk.table",
+   "title": "Most sustained outbound sessions",
+   "dataSources": {
+    "primary": "ds_exfil"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true,
+    "columnFormat": {
+     "connections": {
+      "rowBackgroundColors": "> table | seriesByName(\"connections\") | rangeValue(sessionColorConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "jitterColorConfig": [
+     {
+      "to": 0.05,
+      "value": "#4a1015"
+     },
+     {
+      "from": 0.05,
+      "to": 0.12,
+      "value": "#3a1d20"
+     },
+     {
+      "from": 0.12,
+      "value": "#1c2229"
+     }
+    ],
+    "sessionColorConfig": [
+     {
+      "to": 200,
+      "value": "#1c2229"
+     },
+     {
+      "from": 200,
+      "to": 1000,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 1000,
+      "value": "#4a1015"
+     }
+    ],
+    "srcColorConfig": [
+     {
+      "to": 5,
+      "value": "#1c2229"
+     },
+     {
+      "from": 5,
+      "to": 50,
+      "value": "#3a2c17"
+     },
+     {
+      "from": 50,
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "description": "Ranked by connection count and rate per minute. A steady, high-rate path to one external address is the shape worth explaining.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_peer_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_peer=$row.dest_ip.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_new_peers": {
+   "type": "splunk.table",
+   "title": "Most recently observed external peers",
+   "dataSources": {
+    "primary": "ds_new_peers"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "showRowNumbers": true
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_peer_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_peer=$row.dest_ip.value$",
+      "newTab": false
+     }
+    }
+   ]
+  }
+ },
+ "dataSources": {
+  "ds_host_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats count WHERE index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\" BY host | fields host | sort host"
+   },
+   "name": "Host list"
+  },
+  "ds_traffic": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_traffic` $tk_noise_raw$ | search host IN ($ms_host$) | fields _time _raw host source sourcetype index accepted action age_min ai allowed attempts avg_interval bin blocked connections current day denied denied_out dest_ip dest_port dest_scope dest_service destinations direction distinct_ports duration ext_peers external f first_seen hosts hour inbound inbound_ext intensity interval jitter last_seen linkValues m minutes outbound ports previous_time reached_out service services si sources src_ip src_scope stdev_interval t target targets transport"
+   },
+   "name": "Traffic base search"
+  },
+  "ds_wfp": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_wfp` | search host IN ($ms_host$) | fields _time _raw host source sourcetype index action blocked connections dest_ip dest_port dest_scope external peers process_name process_path"
+   },
+   "name": "WFP base search"
+  },
+  "ds_kpi": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| stats count(eval(action=\"blocked\" AND direction=\"outbound\" AND dest_scope=\"external\")) AS denied_out, count(eval(action=\"allowed\" AND direction=\"inbound\" AND src_scope=\"external\")) AS inbound_ext, dc(eval(if(dest_scope=\"external\", dest_ip, null()))) AS ext_peers, dc(eval(if(action=\"allowed\" AND direction=\"outbound\" AND dest_scope=\"external\", dest_ip, null()))) AS reached_out "
+   },
+   "name": "KPI"
+  },
+  "ds_portscan": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=blocked | bin _time span=5m | stats dc(dest_port) AS distinct_ports, dc(dest_ip) AS targets, count AS attempts, values(transport) AS transport BY _time, host, src_ip | where distinct_ports >= $tk_scan_threshold$ | eval time = strftime(_time, \"%F %T\") | table time host src_ip distinct_ports targets attempts transport | sort - distinct_ports | head 25"
+   },
+   "name": "Port scans"
+  },
+  "ds_sweep": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=blocked | bin _time span=5m | stats dc(dest_ip) AS targets, dc(dest_port) AS distinct_ports, count AS attempts BY _time, host, src_ip | where targets >= $tk_scan_threshold$ | eval time = strftime(_time, \"%F %T\") | table time host src_ip targets distinct_ports attempts | sort - targets | head 25"
+   },
+   "name": "Sweeps"
+  },
+  "ds_scan_timeline": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=blocked | bin _time span=5m | stats dc(dest_port) AS ports BY _time, src_ip | where ports >= $tk_scan_threshold$ | eval duration = 300, intensity = case(ports >= 500, \"massive\", ports >= 200, \"heavy\", true(), \"moderate\") | table _time src_ip duration intensity | sort _time | head 200"
+   },
+   "name": "Scan timeline"
+  },
+  "ds_recon_punch": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=blocked | eval day = strftime(_time, \"%a\"), hour = strftime(_time, \"%H\") | stats count BY day, hour"
+   },
+   "name": "Denied traffic pattern"
+  },
+  "ds_beacon": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=allowed direction=outbound dest_scope=external | sort 0 host dest_ip _time | streamstats current=f last(_time) AS previous_time BY host, dest_ip | eval interval = _time - previous_time | where isnotnull(interval) AND interval > 5 | stats count AS connections, avg(interval) AS avg_interval, stdev(interval) AS stdev_interval, dc(dest_port) AS ports, values(dest_port) AS dest_port BY host, dest_ip | where connections >= 10 AND avg_interval >= 20 | eval jitter = round(stdev_interval / avg_interval, 3), avg_interval = round(avg_interval, 1) | where jitter < 0.25 | table host dest_ip dest_port connections avg_interval jitter | sort + jitter | head 25"
+   },
+   "name": "Beaconing"
+  },
+  "ds_denied_out": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=blocked direction=outbound dest_scope=external | stats count AS denied, dc(dest_ip) AS destinations, dc(dest_port) AS ports, values(dest_service) AS services BY host | sort - denied | head 15"
+   },
+   "name": "Denied outbound"
+  },
+  "ds_c2_graph": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=allowed direction=outbound dest_scope=external | sort 0 host dest_ip _time | streamstats current=f last(_time) AS previous_time BY host, dest_ip | eval interval = _time - previous_time | where isnotnull(interval) AND interval > 5 | stats count AS linkValues, avg(interval) AS ai, stdev(interval) AS si BY host, dest_ip | where linkValues >= 10 AND ai >= 20 AND si < (ai * 0.25) | rename host AS source, dest_ip AS target | sort - linkValues | head 60 | appendpipe [| stats count BY target | rename target AS source | fields source] | table source target linkValues"
+   },
+   "name": "Beaconing graph"
+  },
+  "ds_lolbin": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_wfp",
+    "query": "| search process_name IN (\"powershell.exe\",\"pwsh.exe\",\"cmd.exe\",\"cscript.exe\",\"wscript.exe\",\"mshta.exe\",\"rundll32.exe\",\"regsvr32.exe\",\"certutil.exe\",\"bitsadmin.exe\",\"curl.exe\",\"wget.exe\",\"msiexec.exe\",\"installutil.exe\",\"msbuild.exe\",\"wmic.exe\",\"forfiles.exe\",\"ftp.exe\",\"odbcconf.exe\") dest_scope=external | stats count AS connections, count(eval(action=\"blocked\")) AS blocked, dc(dest_ip) AS peers, values(dest_port) AS dest_port, values(process_path) AS process_path BY host, process_name | sort - connections | head 25"
+   },
+   "name": "LOLBin activity"
+  },
+  "ds_exposed": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=allowed direction=inbound src_scope=external | stats count AS accepted, dc(src_ip) AS sources, values(dest_service) AS service BY host, dest_port, transport | sort - sources | head 20"
+   },
+   "name": "Exposed services"
+  },
+  "ds_admin_exposed": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=allowed direction=inbound src_scope=external dest_port IN (22,23,445,1433,3306,3389,5432,5900,5985,5986) | stats count AS accepted, dc(src_ip) AS sources, values(src_ip) AS src_ip, values(dest_service) AS service BY host, dest_port | sort - accepted | head 20"
+   },
+   "name": "Administrative exposure"
+  },
+  "ds_rare_ports": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search direction=outbound dest_scope=external | eval service = coalesce(dest_service, \"unknown\") | stats count AS connections, dc(host) AS hosts, values(action) AS action BY dest_port, transport, service | where hosts <= 2 AND connections >= 5 | sort + hosts, - connections | head 20"
+   },
+   "name": "Rare ports"
+  },
+  "ds_exposure_graph": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search action=allowed direction=inbound src_scope=external | eval service = coalesce(dest_service, \"port \".dest_port) | stats count AS linkValues BY src_ip, host | rename src_ip AS source, host AS target | sort - linkValues | head 60 | appendpipe [| stats count BY target | rename target AS source | fields source] | table source target linkValues"
+   },
+   "name": "Exposure graph"
+  },
+  "ds_exfil": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search direction=outbound dest_scope=external action=allowed | stats count AS connections, dc(dest_port) AS ports, values(dest_service) AS service, min(_time) AS first_seen, max(_time) AS last_seen BY host, dest_ip | eval minutes = round((last_seen-first_seen)/60, 0), rate = if(minutes>0, round(connections/minutes, 1), connections) | where connections >= 50 | table host dest_ip service ports connections minutes rate | sort - connections | head 20"
+   },
+   "name": "Sustained outbound sessions"
+  },
+  "ds_exfil_time": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search direction=outbound dest_scope=external action=allowed | timechart span=15m count BY host limit=8 useother=t"
+   },
+   "name": "Outbound sessions over time"
+  },
+  "ds_new_peers": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search dest_scope=external | stats min(_time) AS first_seen, max(_time) AS last_seen, count AS connections, values(dest_service) AS service BY host, dest_ip, dest_port | eval age_min = round((now() - first_seen)/60, 1), first_seen = strftime(first_seen, \"%F %T\"), last_seen = strftime(last_seen, \"%F %T\") | sort + age_min | head 20"
+   },
+   "name": "New external peers"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-24h@h,now"
+   }
+  },
+  "input_host": {
+   "type": "input.multiselect",
+   "title": "Host",
+   "dataSources": {
+    "primary": "ds_host_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_host",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_threshold": {
+   "type": "input.dropdown",
+   "title": "Scan threshold",
+   "options": {
+    "token": "tk_scan_threshold",
+    "defaultValue": "50",
+    "items": [
+     {
+      "label": "Aggressive (20)",
+      "value": "20"
+     },
+     {
+      "label": "Balanced (50)",
+      "value": "50"
+     },
+     {
+      "label": "Conservative (100)",
+      "value": "100"
+     },
+     {
+      "label": "Very conservative (250)",
+      "value": "250"
+     }
+    ]
+   }
+  },
+  "input_optional": {
+   "type": "input.dropdown",
+   "title": "Optional sections",
+   "options": {
+    "token": "tk_optional",
+    "defaultValue": "all",
+    "items": [
+     {
+      "label": "Show all sections",
+      "value": "all"
+     },
+     {
+      "label": "Firewall log only",
+      "value": "core"
+     }
+    ]
+   }
+  },
+  "input_noise": {
+   "type": "input.dropdown",
+   "title": "Structural noise",
+   "options": {
+    "token": "tk_noise_raw",
+    "defaultValue": "is_noise=0",
+    "items": [
+     {
+      "label": "Hide broadcast / multicast / loopback",
+      "value": "is_noise=0"
+     },
+     {
+      "label": "Show everything",
+      "value": "*"
+     }
+    ]
+   }
+  }
+ },
+ "layout": {
+  "tabs": {
+   "items": [
+    {
+     "layoutId": "layout_recon",
+     "label": "Reconnaissance"
+    },
+    {
+     "layoutId": "layout_c2",
+     "label": "Command & control"
+    },
+    {
+     "layoutId": "layout_exposure",
+     "label": "Exposure"
+    },
+    {
+     "layoutId": "layout_data",
+     "label": "Data movement"
+    }
+   ]
+  },
+  "layoutDefinitions": {
+   "layout_recon": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 90
+      }
+     },
+     {
+      "item": "kpi_denied_out",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 90,
+       "w": 360,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_inbound",
+      "type": "block",
+      "position": {
+       "x": 360,
+       "y": 90,
+       "w": 360,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_peers",
+      "type": "block",
+      "position": {
+       "x": 720,
+       "y": 90,
+       "w": 360,
+       "h": 150
+      }
+     },
+     {
+      "item": "kpi_out",
+      "type": "block",
+      "position": {
+       "x": 1080,
+       "y": 90,
+       "w": 360,
+       "h": 150
+      }
+     },
+     {
+      "item": "hdr_recon",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 240,
+       "w": 1440,
+       "h": 50
+      }
+     },
+     {
+      "item": "viz_scan_timeline",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 290,
+       "w": 1440,
+       "h": 320
+      }
+     },
+     {
+      "item": "viz_portscan",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 610,
+       "w": 720,
+       "h": 380
+      }
+     },
+     {
+      "item": "viz_sweep",
+      "type": "block",
+      "position": {
+       "x": 720,
+       "y": 610,
+       "w": 720,
+       "h": 380
+      }
+     },
+     {
+      "item": "viz_recon_punch",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 990,
+       "w": 1440,
+       "h": 320
+      }
+     }
+    ]
+   },
+   "layout_c2": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr_c2",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 70
+      }
+     },
+     {
+      "item": "viz_c2_graph",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 70,
+       "w": 1440,
+       "h": 520
+      }
+     },
+     {
+      "item": "viz_beacon",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 590,
+       "w": 835,
+       "h": 420
+      }
+     },
+     {
+      "item": "viz_denied_out",
+      "type": "block",
+      "position": {
+       "x": 835,
+       "y": 590,
+       "w": 605,
+       "h": 420
+      }
+     },
+     {
+      "item": "hdr_lolbin",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 1010,
+       "w": 1440,
+       "h": 50
+      }
+     },
+     {
+      "item": "viz_lolbin",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 1060,
+       "w": 1440,
+       "h": 380
+      }
+     }
+    ]
+   },
+   "layout_exposure": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr_expo",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 50
+      }
+     },
+     {
+      "item": "viz_exposure_graph",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 50,
+       "w": 1440,
+       "h": 460
+      }
+     },
+     {
+      "item": "viz_admin_exposed",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 510,
+       "w": 1440,
+       "h": 380
+      }
+     },
+     {
+      "item": "viz_exposed",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 890,
+       "w": 720,
+       "h": 420
+      }
+     },
+     {
+      "item": "viz_rare",
+      "type": "block",
+      "position": {
+       "x": 720,
+       "y": 890,
+       "w": 720,
+       "h": 420
+      }
+     }
+    ]
+   },
+   "layout_data": {
+    "type": "grid",
+    "options": {
+     "width": 1440,
+     "submitButton": false,
+     "backgroundColor": "#0e1319"
+    },
+    "structure": [
+     {
+      "item": "hdr_data",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 0,
+       "w": 1440,
+       "h": 40
+      }
+     },
+     {
+      "item": "viz_exfil_time",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 40,
+       "w": 1440,
+       "h": 340
+      }
+     },
+     {
+      "item": "viz_exfil",
+      "type": "block",
+      "position": {
+       "x": 0,
+       "y": 380,
+       "w": 792,
+       "h": 440
+      }
+     },
+     {
+      "item": "viz_new_peers",
+      "type": "block",
+      "position": {
+       "x": 792,
+       "y": 380,
+       "w": 648,
+       "h": 440
+      }
+     }
+    ]
+   }
+  },
+  "globalInputs": [
+   "input_time",
+   "input_host",
+   "input_threshold",
+   "input_optional",
+   "input_noise"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ },
+ "expressions": {
+  "conditions": {
+   "condition_optional": {
+    "name": "Optional sections shown",
+    "value": "$tk_optional$ = \"all\""
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

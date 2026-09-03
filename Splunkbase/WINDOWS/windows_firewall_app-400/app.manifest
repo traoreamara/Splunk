@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "2.0.0",
+  "info": {
+    "title": "Microsoft Windows Firewall Observability",
+    "id": {
+      "group": null,
+      "name": "windows_firewall_app",
+      "version": "4.0.0"
+    },
+    "author": [
+      {
+        "name": "Amara TRAORE",
+        "email": "amara.traore@avangard.at",
+        "company": null
+      }
+    ],
+    "releaseDate": null,
+    "description": "Collect, parse, normalise and visualise Windows Defender Firewall activity: the connection log (pfirewall.log), the configuration and policy change events, the Windows Filtering Platform audit events that attribute a connection to the binary that opened it, and - with the companion TA-windows-firewall-posture - the current configuration state of every host. Built for Dashboard Studio 10.4: tabbed dashboards, network graphs for east-west and beaconing maps, timelines, trellis small multiples and conditional sections. Ships hardened data inputs, a version-tolerant field extraction, CIM compliant knowledge objects for the Network Traffic and Change data models, an accelerable data model, nine dashboards and twenty-four detections and reports.",
+    "classification": {
+      "categories": [
+        "IT Operations",
+        "Security, Fraud & Compliance"
+      ],
+      "developmentStatus": "Production/Stable",
+      "intendedAudience": "IT Professionals"
+    },
+    "commonInformationModels": {
+      "Network_Traffic": ">=6.0.0",
+      "Change": ">=6.0.0"
+    },
+    "license": {
+      "name": "Splunk General Terms (SGT)",
+      "text": "./README.txt",
+      "uri": "https://www.splunk.com/en_us/legal/splunk-general-terms.html"
+    },
+    "privacyPolicy": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
+    "releaseNotes": {
+      "name": "Release notes",
+      "text": "./RELEASE_NOTES.md",
+      "uri": null
+    }
+  },
+  "dependencies": {
+    "Splunk_TA_windows": {
+      "version": ">=8.9.0",
+      "optional": false
+    }
+  },
+  "tasks": null,
+  "inputGroups": null,
+  "incompatibleApps": {
+    "TA-winfw": ">=1.0.0"
+  },
+  "platformRequirements": {
+    "splunk": {
+      "Enterprise": "*"
+    }
+  },
+  "supportedDeployments": [
+    "_standalone",
+    "_distributed",
+    "_search_head_clustering"
+  ],
+  "targetWorkloads": [
+    "_search_heads",
+    "_indexers",
+    "_forwarders"
+  ]
+}

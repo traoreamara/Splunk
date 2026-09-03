@@ -1,0 +1,82 @@
+port,protocol,service,service_description
+20,tcp,ftp-data,FTP data transfer
+21,tcp,ftp,FTP control
+22,tcp,ssh,SSH / SFTP
+23,tcp,telnet,Telnet (cleartext)
+25,tcp,smtp,SMTP
+53,tcp,dns,DNS over TCP
+53,udp,dns,DNS
+67,udp,dhcp,DHCP server
+68,udp,dhcp,DHCP client
+69,udp,tftp,TFTP
+80,tcp,http,HTTP
+88,tcp,kerberos,Kerberos
+88,udp,kerberos,Kerberos
+110,tcp,pop3,POP3
+111,tcp,rpcbind,ONC RPC
+123,udp,ntp,NTP
+135,tcp,msrpc,Microsoft RPC endpoint mapper
+137,udp,netbios-ns,NetBIOS name service
+138,udp,netbios-dgm,NetBIOS datagram
+139,tcp,netbios-ssn,NetBIOS session
+143,tcp,imap,IMAP
+161,udp,snmp,SNMP
+162,udp,snmptrap,SNMP trap
+389,tcp,ldap,LDAP
+389,udp,ldap,LDAP
+443,tcp,https,HTTPS / QUIC fallback
+443,udp,quic,QUIC / HTTP3
+445,tcp,smb,SMB / CIFS
+464,tcp,kpasswd,Kerberos password change
+465,tcp,smtps,SMTP over TLS
+500,udp,isakmp,IPsec IKE
+514,udp,syslog,Syslog
+515,tcp,lpd,Line printer daemon
+587,tcp,submission,SMTP submission
+593,tcp,http-rpc-epmap,RPC over HTTP
+623,udp,ipmi,IPMI / BMC
+636,tcp,ldaps,LDAP over TLS
+873,tcp,rsync,rsync
+993,tcp,imaps,IMAP over TLS
+995,tcp,pop3s,POP3 over TLS
+1080,tcp,socks,SOCKS proxy
+1194,udp,openvpn,OpenVPN
+1433,tcp,ms-sql,Microsoft SQL Server
+1434,udp,ms-sql-m,SQL Server browser
+1521,tcp,oracle,Oracle TNS
+1701,udp,l2tp,L2TP VPN
+1723,tcp,pptp,PPTP VPN
+1900,udp,ssdp,SSDP / UPnP
+2049,tcp,nfs,NFS
+2179,tcp,vmrdp,Hyper-V VMConnect
+3128,tcp,squid,HTTP proxy
+3268,tcp,globalcatalog,AD global catalog
+3269,tcp,globalcatalog-ssl,AD global catalog over TLS
+3306,tcp,mysql,MySQL / MariaDB
+3389,tcp,rdp,Remote Desktop
+3389,udp,rdp,Remote Desktop (UDP transport)
+4500,udp,ipsec-nat-t,IPsec NAT traversal
+5060,udp,sip,SIP
+5061,tcp,sips,SIP over TLS
+5353,udp,mdns,Multicast DNS
+5355,udp,llmnr,LLMNR
+5432,tcp,postgresql,PostgreSQL
+5671,tcp,amqps,AMQP over TLS
+5672,tcp,amqp,AMQP
+5900,tcp,vnc,VNC
+5985,tcp,winrm-http,WinRM / PowerShell remoting
+5986,tcp,winrm-https,WinRM over TLS
+6379,tcp,redis,Redis
+6667,tcp,irc,IRC
+8000,tcp,http-alt,HTTP alternate
+8006,tcp,splunkd,Splunk management port
+8080,tcp,http-proxy,HTTP proxy / alternate
+8088,tcp,splunk-hec,Splunk HTTP Event Collector
+8089,tcp,splunkd,Splunk management port
+8443,tcp,https-alt,HTTPS alternate
+9000,tcp,http-alt,HTTP alternate
+9200,tcp,elasticsearch,Elasticsearch
+9997,tcp,splunk-s2s,Splunk forwarder receiving
+11211,tcp,memcached,Memcached
+27017,tcp,mongodb,MongoDB
+47001,tcp,winrm-listener,WinRM HTTP listener

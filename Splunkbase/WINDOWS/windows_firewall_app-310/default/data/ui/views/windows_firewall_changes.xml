@@ -1,0 +1,907 @@
+<dashboard version="2" theme="dark">
+    <label>Firewall Changes</label>
+    <description>Audit trail of Windows Defender Firewall settings, rules and service state, with a severity ranking of each change.</description>
+    <definition><![CDATA[
+{
+ "title": "Firewall Changes",
+ "description": "Audit trail of Windows Defender Firewall settings, rules and service state, with a severity ranking of each change.",
+ "visualizations": {
+  "hdr": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Firewall Configuration & Policy Changes\nWho changed what, where, and how dangerous it is.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_changes": {
+   "type": "splunk.singlevalue",
+   "title": "Changes",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('changes') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#dbe0e6"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_hosts": {
+   "type": "splunk.singlevalue",
+   "title": "Hosts affected",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_policy": {
+   "type": "splunk.singlevalue",
+   "title": "Rule changes",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('policy') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#a175ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_created": {
+   "type": "splunk.singlevalue",
+   "title": "Rules created",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('created') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#f5a623"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_deleted": {
+   "type": "splunk.singlevalue",
+   "title": "Rules deleted",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('deleted') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#e05f9e"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_critical": {
+   "type": "splunk.singlevalue",
+   "title": "High / critical",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('critical') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 1,
+      "value": "#2fb67c"
+     },
+     {
+      "from": 1,
+      "to": 5,
+      "value": "#f5a623"
+     },
+     {
+      "from": 5,
+      "value": "#e5484d"
+     }
+    ]
+   },
+   "description": "Firewall turned off, default inbound set to allow, service stopped, policy reset or new inbound allow rule."
+  },
+  "hdr_time": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Change activity",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_timeline": {
+   "type": "splunk.column",
+   "title": "Changes over time by outcome",
+   "dataSources": {
+    "primary": "ds_timeline"
+   },
+   "options": {
+    "stackMode": "stacked",
+    "seriesColors": [
+     "#e5484d",
+     "#f5a623",
+     "#2fb67c",
+     "#4fa3ff",
+     "#a175ff",
+     "#31c2c9",
+     "#e05f9e",
+     "#8c9199"
+    ],
+    "legendDisplay": "bottom",
+    "yAxisTitleText": "Changes",
+    "xAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_by_type": {
+   "type": "splunk.pie",
+   "title": "By change type",
+   "dataSources": {
+    "primary": "ds_by_type"
+   },
+   "options": {
+    "showDonutHole": true,
+    "seriesColors": [
+     "#a175ff",
+     "#f5a623",
+     "#31c2c9",
+     "#8c9199"
+    ],
+    "legendDisplay": "bottom"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_who": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Posture and authors",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_state": {
+   "type": "splunk.table",
+   "title": "Firewall state by host",
+   "dataSources": {
+    "primary": "ds_state"
+   },
+   "options": {
+    "count": 8,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "state": {
+      "rowBackgroundColors": "> table | seriesByName(\"state\") | matchValue(stateBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "resultBgConfig": [
+     {
+      "match": "firewall disabled",
+      "value": "#4a1015"
+     },
+     {
+      "match": "default inbound: allow",
+      "value": "#4a1015"
+     },
+     {
+      "match": "service stopped",
+      "value": "#4a1015"
+     },
+     {
+      "match": "firewall reset to defaults",
+      "value": "#3a2410"
+     },
+     {
+      "match": "created:allow",
+      "value": "#3a2410"
+     },
+     {
+      "match": "modified:allow",
+      "value": "#3a2410"
+     },
+     {
+      "match": "deleted",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "created:block",
+      "value": "#14301f"
+     },
+     {
+      "match": "modified:block",
+      "value": "#14301f"
+     },
+     {
+      "match": "firewall enabled",
+      "value": "#14301f"
+     },
+     {
+      "match": "default inbound: block",
+      "value": "#14301f"
+     }
+    ],
+    "severityBgConfig": [
+     {
+      "match": "critical",
+      "value": "#4a1015"
+     },
+     {
+      "match": "high",
+      "value": "#3a1d20"
+     },
+     {
+      "match": "medium",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "informational",
+      "value": "#1c2229"
+     }
+    ],
+    "stateBgConfig": [
+     {
+      "match": "enabled",
+      "value": "#14301f"
+     },
+     {
+      "match": "disabled",
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "viz_top_apps": {
+   "type": "splunk.table",
+   "title": "Applications making changes",
+   "dataSources": {
+    "primary": "ds_top_apps"
+   },
+   "options": {
+    "count": 8,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "viz_top_users": {
+   "type": "splunk.table",
+   "title": "Users making changes",
+   "dataSources": {
+    "primary": "ds_top_users"
+   },
+   "options": {
+    "count": 8,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "viz_noisy": {
+   "type": "splunk.table",
+   "title": "Most modified hosts",
+   "dataSources": {
+    "primary": "ds_noisy_hosts"
+   },
+   "options": {
+    "count": 8,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "hdr_hist": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Full change history",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_history": {
+   "type": "splunk.table",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_history"
+   },
+   "options": {
+    "count": 20,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "severity": {
+      "rowBackgroundColors": "> table | seriesByName(\"severity\") | matchValue(severityBgConfig)"
+     },
+     "result": {
+      "rowBackgroundColors": "> table | seriesByName(\"result\") | matchValue(resultBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "resultBgConfig": [
+     {
+      "match": "firewall disabled",
+      "value": "#4a1015"
+     },
+     {
+      "match": "default inbound: allow",
+      "value": "#4a1015"
+     },
+     {
+      "match": "service stopped",
+      "value": "#4a1015"
+     },
+     {
+      "match": "firewall reset to defaults",
+      "value": "#3a2410"
+     },
+     {
+      "match": "created:allow",
+      "value": "#3a2410"
+     },
+     {
+      "match": "modified:allow",
+      "value": "#3a2410"
+     },
+     {
+      "match": "deleted",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "created:block",
+      "value": "#14301f"
+     },
+     {
+      "match": "modified:block",
+      "value": "#14301f"
+     },
+     {
+      "match": "firewall enabled",
+      "value": "#14301f"
+     },
+     {
+      "match": "default inbound: block",
+      "value": "#14301f"
+     }
+    ],
+    "severityBgConfig": [
+     {
+      "match": "critical",
+      "value": "#4a1015"
+     },
+     {
+      "match": "high",
+      "value": "#3a1d20"
+     },
+     {
+      "match": "medium",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "informational",
+      "value": "#1c2229"
+     }
+    ],
+    "stateBgConfig": [
+     {
+      "match": "enabled",
+      "value": "#14301f"
+     },
+     {
+      "match": "disabled",
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  }
+ },
+ "dataSources": {
+  "ds_changes": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` | search Computer IN ($ms_computer$) EventID IN ($ms_eventid$) change_type IN ($ms_change_type$) ModifyingUser=\"$tk_user$\""
+   },
+   "name": "Change base search"
+  },
+  "ds_computer_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` | stats count BY Computer | fields Computer | sort Computer"
+   },
+   "name": "Computers"
+  },
+  "ds_eventid_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` | stats count BY EventID | fields EventID | sort EventID"
+   },
+   "name": "Event IDs"
+  },
+  "ds_changetype_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` | stats count BY change_type | fields change_type | sort change_type"
+   },
+   "name": "Change types"
+  },
+  "ds_kpi": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| stats count AS changes, dc(Computer) AS hosts, count(eval(change_type=\"firewall-policy\")) AS policy, count(eval(action=\"created\")) AS created, count(eval(action=\"deleted\")) AS deleted, count(eval(severity IN (\"critical\",\"high\"))) AS critical"
+   },
+   "name": "KPI"
+  },
+  "ds_timeline": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| timechart span=1h count BY result useother=f limit=8"
+   },
+   "name": "Change timeline"
+  },
+  "ds_by_type": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| stats count BY change_type | sort - count"
+   },
+   "name": "By change type"
+  },
+  "ds_state": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` EventID IN (2003,2082,2083) SettingType=1 | search Computer IN ($ms_computer$) | eval firewall_state = if(SettingValue=\"01000000\",\"enabled\",\"disabled\") | stats latest(_time) AS last_change, latest(firewall_state) AS state, latest(Profiles) AS profile, latest(ModifyingUser) AS user BY Computer | eval last_change = strftime(last_change, \"%F %T\") | sort state, Computer"
+   },
+   "name": "Firewall state"
+  },
+  "ds_top_apps": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| search ModifyingApplication=* | stats count AS changes, dc(RuleName) AS rules, dc(Computer) AS hosts BY ModifyingApplication | sort - changes | head 10"
+   },
+   "name": "Top modifying applications"
+  },
+  "ds_top_users": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| search ModifyingUser=* | stats count AS changes, dc(RuleName) AS rules, dc(Computer) AS hosts BY ModifyingUser | sort - changes | head 10"
+   },
+   "name": "Top modifying users"
+  },
+  "ds_noisy_hosts": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| stats count AS changes, dc(RuleName) AS rules_touched, values(change_type) AS change_type BY Computer | sort - changes | head 10"
+   },
+   "name": "Most modified hosts"
+  },
+  "ds_history": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| lookup windows_firewall_event_id EventID OUTPUT Description | eval Object = coalesce(RuleName, setting_name, \"-\"), Description = coalesce(setting_name.\" — \".Description, Description) | table _time Computer severity result action change_type EventID Description Object rule_action direction Protocol LocalPorts RemotePorts LocalAddresses RemoteAddresses Profiles ApplicationPath ModifyingApplication ModifyingUser | sort - _time"
+   },
+   "name": "Change history"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-7d@d,now"
+   }
+  },
+  "input_computer": {
+   "type": "input.multiselect",
+   "title": "Computer",
+   "dataSources": {
+    "primary": "ds_computer_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_computer",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"Computer\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"Computer\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_eventid": {
+   "type": "input.multiselect",
+   "title": "Event ID",
+   "dataSources": {
+    "primary": "ds_eventid_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_eventid",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"EventID\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"EventID\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_change_type": {
+   "type": "input.multiselect",
+   "title": "Change type",
+   "dataSources": {
+    "primary": "ds_changetype_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_change_type",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"change_type\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"change_type\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_user": {
+   "type": "input.text",
+   "title": "Modifying user",
+   "options": {
+    "token": "tk_user",
+    "defaultValue": "*"
+   }
+  }
+ },
+ "layout": {
+  "type": "grid",
+  "options": {
+   "width": 1440,
+   "submitButton": false,
+   "backgroundColor": "#0e1319"
+  },
+  "structure": [
+   {
+    "item": "hdr",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 0,
+     "w": 1440,
+     "h": 70
+    }
+   },
+   {
+    "item": "kpi_changes",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_hosts",
+    "type": "block",
+    "position": {
+     "x": 240,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_policy",
+    "type": "block",
+    "position": {
+     "x": 480,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_created",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_deleted",
+    "type": "block",
+    "position": {
+     "x": 960,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_critical",
+    "type": "block",
+    "position": {
+     "x": 1200,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "hdr_time",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 220,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_timeline",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 260,
+     "w": 979,
+     "h": 320
+    }
+   },
+   {
+    "item": "viz_by_type",
+    "type": "block",
+    "position": {
+     "x": 979,
+     "y": 260,
+     "w": 461,
+     "h": 320
+    }
+   },
+   {
+    "item": "hdr_who",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 580,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_state",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 620,
+     "w": 360,
+     "h": 320
+    }
+   },
+   {
+    "item": "viz_top_apps",
+    "type": "block",
+    "position": {
+     "x": 360,
+     "y": 620,
+     "w": 360,
+     "h": 320
+    }
+   },
+   {
+    "item": "viz_top_users",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 620,
+     "w": 360,
+     "h": 320
+    }
+   },
+   {
+    "item": "viz_noisy",
+    "type": "block",
+    "position": {
+     "x": 1080,
+     "y": 620,
+     "w": 360,
+     "h": 320
+    }
+   },
+   {
+    "item": "hdr_hist",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 940,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_history",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 980,
+     "w": 1440,
+     "h": 620
+    }
+   }
+  ],
+  "globalInputs": [
+   "input_time",
+   "input_computer",
+   "input_eventid",
+   "input_change_type",
+   "input_user"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

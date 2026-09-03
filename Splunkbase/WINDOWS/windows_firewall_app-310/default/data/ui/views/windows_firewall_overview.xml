@@ -1,0 +1,735 @@
+<dashboard version="2" theme="dark">
+    <label>Firewall Overview</label>
+    <description>Single pane of glass: collection health, allowed vs blocked volume, noisiest services, firewall state and the latest configuration changes. Runs on the shipped data model.</description>
+    <definition><![CDATA[
+{
+ "title": "Firewall Overview",
+ "description": "Single pane of glass: collection health, allowed vs blocked volume, noisiest services, firewall state and the latest configuration changes. Runs on the shipped data model.",
+ "visualizations": {
+  "hdr_kpi": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Windows Defender Firewall — Overview\nVolume, posture and collection health across every monitored host. The counters run on the `Windows_Firewall_Observability` data model — accelerate it to make this page instant.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_hosts": {
+   "type": "splunk.singlevalue",
+   "title": "Hosts reporting",
+   "dataSources": {
+    "primary": "ds_kpi_card"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_total": {
+   "type": "splunk.singlevalue",
+   "title": "Connections logged",
+   "dataSources": {
+    "primary": "ds_kpi_counts"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('total') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#dbe0e6"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_allowed": {
+   "type": "splunk.singlevalue",
+   "title": "Allowed",
+   "dataSources": {
+    "primary": "ds_kpi_counts"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('allowed') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#2fb67c"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_blocked": {
+   "type": "splunk.singlevalue",
+   "title": "Blocked",
+   "dataSources": {
+    "primary": "ds_kpi_counts"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('blocked') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#e5484d"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_blocked_pct": {
+   "type": "splunk.singlevalue",
+   "title": "Blocked ratio",
+   "dataSources": {
+    "primary": "ds_kpi_counts"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('blocked_pct') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 1,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)",
+    "unit": "%",
+    "unitPosition": "after"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 5,
+      "value": "#2fb67c"
+     },
+     {
+      "from": 5,
+      "to": 25,
+      "value": "#f5a623"
+     },
+     {
+      "from": 25,
+      "value": "#e5484d"
+     }
+    ]
+   },
+   "description": "Share of denied connections. A sudden jump usually means a scan, a broken app or a new policy."
+  },
+  "kpi_critical": {
+   "type": "splunk.singlevalue",
+   "title": "High / critical changes",
+   "dataSources": {
+    "primary": "ds_kpi_changes"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('critical') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "> majorValue | rangeValue(majorColorConfig)"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "majorColorConfig": [
+     {
+      "to": 1,
+      "value": "#2fb67c"
+     },
+     {
+      "from": 1,
+      "to": 5,
+      "value": "#f5a623"
+     },
+     {
+      "from": 5,
+      "value": "#e5484d"
+     }
+    ]
+   }
+  },
+  "hdr_traffic": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Traffic",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_timechart": {
+   "type": "splunk.area",
+   "title": "Allowed vs blocked over time",
+   "dataSources": {
+    "primary": "ds_timechart"
+   },
+   "options": {
+    "stackMode": "stacked",
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#8c9199"
+    ],
+    "legendDisplay": "bottom",
+    "yAxisTitleText": "Connections",
+    "xAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_direction": {
+   "type": "splunk.pie",
+   "title": "Direction and outcome",
+   "dataSources": {
+    "primary": "ds_direction"
+   },
+   "options": {
+    "showDonutHole": true,
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#4fa3ff",
+     "#f5a623",
+     "#a175ff",
+     "#8c9199"
+    ],
+    "legendDisplay": "right"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_focus": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Where the noise comes from — click a row to open the dedicated view",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_top_blocked": {
+   "type": "splunk.bar",
+   "title": "Top 10 blocked services",
+   "dataSources": {
+    "primary": "ds_top_blocked"
+   },
+   "options": {
+    "seriesColors": [
+     "#e5484d"
+    ],
+    "legendDisplay": "off",
+    "xAxisTitleText": "Denied connections",
+    "yAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_top_talkers": {
+   "type": "splunk.table",
+   "title": "Top 10 talkers",
+   "dataSources": {
+    "primary": "ds_top_talkers"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "Opens the Host 360 view for the selected machine.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_fw_state": {
+   "type": "splunk.table",
+   "title": "Firewall state by host",
+   "dataSources": {
+    "primary": "ds_fw_state"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "state": {
+      "rowBackgroundColors": "> table | seriesByName(\"state\") | matchValue(stateBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "stateBgConfig": [
+     {
+      "match": "enabled",
+      "value": "#14301f"
+     },
+     {
+      "match": "disabled",
+      "value": "#4a1015"
+     }
+    ]
+   },
+   "description": "Based on the last Enable/Disable event received per host.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.Computer.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_geo": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Exposure, configuration and collection health",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_geo": {
+   "type": "splunk.choropleth.svg",
+   "title": "External destinations by country",
+   "dataSources": {
+    "primary": "ds_geo"
+   },
+   "options": {
+    "projection": "equirectangular"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_recent_changes": {
+   "type": "splunk.table",
+   "title": "Latest firewall configuration changes",
+   "dataSources": {
+    "primary": "ds_recent_changes"
+   },
+   "options": {
+    "count": 10,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "viz_stale": {
+   "type": "splunk.table",
+   "title": "Hosts that went quiet",
+   "dataSources": {
+    "primary": "ds_stale"
+   },
+   "options": {
+    "count": 8,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "description": "No firewall traffic for at least 6 hours. Check the forwarder or the logging setting before trusting an empty dashboard.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  }
+ },
+ "dataSources": {
+  "ds_host_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats count WHERE index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\" BY host | fields host | sort host"
+   },
+   "name": "Host list"
+  },
+  "ds_changes": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` | search host IN ($ms_host$)"
+   },
+   "name": "Configuration changes base search"
+  },
+  "ds_kpi_counts": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` count AS events FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) BY Traffic.action | rename Traffic.action AS action | stats sum(events) AS total, sum(eval(if(action=\"allowed\", events, 0))) AS allowed, sum(eval(if(action=\"blocked\", events, 0))) AS blocked | eval blocked_pct = if(total>0, round(blocked*100/total, 1), 0)"
+   },
+   "name": "KPI counts (tstats)"
+  },
+  "ds_kpi_card": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` dc(Traffic.host) AS hosts, dc(Traffic.dest_ip) AS destinations, sum(Traffic.bytes) AS bytes FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) | eval gb = round(bytes/1073741824, 2)"
+   },
+   "name": "KPI cardinality (tstats)"
+  },
+  "ds_kpi_changes": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| stats count AS changes, count(eval(severity IN (\"critical\",\"high\"))) AS critical"
+   },
+   "name": "KPI changes"
+  },
+  "ds_timechart": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` count FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) BY _time, Traffic.action span=10m | rename Traffic.action AS action | timechart span=10m sum(count) BY action"
+   },
+   "name": "Traffic over time (tstats)"
+  },
+  "ds_direction": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` count FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) BY Traffic.direction, Traffic.action | rename Traffic.* AS * | eval flow = direction.\" / \".action | stats sum(count) AS count BY flow | sort - count"
+   },
+   "name": "Flow mix (tstats)"
+  },
+  "ds_top_blocked": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` count FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) Traffic.action=blocked BY Traffic.dest_port, Traffic.dest_service | rename Traffic.* AS * | eval service = if(isnull(dest_service) OR dest_service=\"\", \"port \".dest_port, dest_service.\" (\".dest_port.\")\") | stats sum(count) AS count BY service | sort - count | head 10"
+   },
+   "name": "Top blocked services (tstats)"
+  },
+  "ds_top_talkers": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` count AS connections FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) BY Traffic.host | rename Traffic.host AS host | sort - connections | head 10"
+   },
+   "name": "Top talkers (tstats)"
+  },
+  "ds_geo": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats `wfo_summariesonly` count FROM `wfo_datamodel` WHERE nodename=Traffic $tk_noise$ Traffic.host IN ($ms_host$) Traffic.dest_scope=external BY Traffic.dest_ip | rename Traffic.dest_ip AS dest_ip | iplocation dest_ip | search Country=* | stats sum(count) AS count BY Country | geom geo_countries featureIdField=\"Country\""
+   },
+   "name": "External destinations (tstats)"
+  },
+  "ds_fw_state": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_changes` EventID IN (2003,2082,2083) SettingType=1 | search host IN ($ms_host$) | eval firewall_state = if(SettingValue=\"01000000\", \"enabled\", \"disabled\") | stats latest(_time) AS last_change, latest(firewall_state) AS state, latest(Profiles) AS profile BY Computer | eval last_change = strftime(last_change, \"%F %T\") | sort state, Computer"
+   },
+   "name": "Firewall state"
+  },
+  "ds_recent_changes": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_changes",
+    "query": "| search NOT EventID IN (2010,2011,2012) | lookup windows_firewall_event_id EventID OUTPUT Description | eval Object = coalesce(RuleName, setting_name, \"-\") | table _time Computer result Object ModifyingUser ModifyingApplication severity | sort - _time | head 20"
+   },
+   "name": "Recent changes"
+  },
+  "ds_stale": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats latest(_time) AS last_seen WHERE index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\" BY host | eval hours_since = round((now() - last_seen)/3600, 1), last_seen = strftime(last_seen, \"%F %T\") | where hours_since >= 6 | sort - hours_since | head 10"
+   },
+   "name": "Hosts gone quiet"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-24h@h,now"
+   }
+  },
+  "input_host": {
+   "type": "input.multiselect",
+   "title": "Host",
+   "dataSources": {
+    "primary": "ds_host_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_host",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_noise": {
+   "type": "input.dropdown",
+   "title": "Structural noise",
+   "options": {
+    "token": "tk_noise",
+    "defaultValue": "Traffic.is_noise=0",
+    "items": [
+     {
+      "label": "Hide broadcast / multicast / loopback",
+      "value": "Traffic.is_noise=0"
+     },
+     {
+      "label": "Show everything",
+      "value": ""
+     }
+    ]
+   }
+  }
+ },
+ "layout": {
+  "type": "grid",
+  "options": {
+   "width": 1440,
+   "submitButton": false,
+   "backgroundColor": "#0e1319"
+  },
+  "structure": [
+   {
+    "item": "hdr_kpi",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 0,
+     "w": 1440,
+     "h": 90
+    }
+   },
+   {
+    "item": "kpi_hosts",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 90,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_total",
+    "type": "block",
+    "position": {
+     "x": 240,
+     "y": 90,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_allowed",
+    "type": "block",
+    "position": {
+     "x": 480,
+     "y": 90,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_blocked",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 90,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_blocked_pct",
+    "type": "block",
+    "position": {
+     "x": 960,
+     "y": 90,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_critical",
+    "type": "block",
+    "position": {
+     "x": 1200,
+     "y": 90,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "hdr_traffic",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 240,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_timechart",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 280,
+     "w": 979,
+     "h": 320
+    }
+   },
+   {
+    "item": "viz_direction",
+    "type": "block",
+    "position": {
+     "x": 979,
+     "y": 280,
+     "w": 461,
+     "h": 320
+    }
+   },
+   {
+    "item": "hdr_focus",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 600,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_top_blocked",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 640,
+     "w": 489,
+     "h": 340
+    }
+   },
+   {
+    "item": "viz_top_talkers",
+    "type": "block",
+    "position": {
+     "x": 489,
+     "y": 640,
+     "w": 475,
+     "h": 340
+    }
+   },
+   {
+    "item": "viz_fw_state",
+    "type": "block",
+    "position": {
+     "x": 964,
+     "y": 640,
+     "w": 476,
+     "h": 340
+    }
+   },
+   {
+    "item": "hdr_geo",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 980,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_geo",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1020,
+     "w": 576,
+     "h": 400
+    }
+   },
+   {
+    "item": "viz_recent_changes",
+    "type": "block",
+    "position": {
+     "x": 576,
+     "y": 1020,
+     "w": 864,
+     "h": 400
+    }
+   },
+   {
+    "item": "viz_stale",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1420,
+     "w": 1440,
+     "h": 300
+    }
+   }
+  ],
+  "globalInputs": [
+   "input_time",
+   "input_host",
+   "input_noise"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

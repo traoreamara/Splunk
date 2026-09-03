@@ -1,0 +1,631 @@
+<dashboard version="2" theme="dark">
+    <label>Traffic Investigator</label>
+    <description>Detailed, filterable tables of the Windows Defender Firewall connection log with geo enrichment and service resolution.</description>
+    <definition><![CDATA[
+{
+ "title": "Traffic Investigator",
+ "description": "Detailed, filterable tables of the Windows Defender Firewall connection log with geo enrichment and service resolution.",
+ "visualizations": {
+  "hdr": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Traffic Investigator\nTable centric view for a precise investigation. Every table drills down to the underlying search.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_events": {
+   "type": "splunk.singlevalue",
+   "title": "Events",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('events') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#dbe0e6"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_hosts": {
+   "type": "splunk.singlevalue",
+   "title": "Hosts",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('hosts') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_sources": {
+   "type": "splunk.singlevalue",
+   "title": "Source addresses",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('sources') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#a175ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_dest": {
+   "type": "splunk.singlevalue",
+   "title": "Destination addresses",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('destinations') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#31c2c9"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_ports": {
+   "type": "splunk.singlevalue",
+   "title": "Destination ports",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('ports') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#f5a623"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_geo": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Connections by host, peer and geography",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_geo_table": {
+   "type": "splunk.table",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_geo_table"
+   },
+   "options": {
+    "count": 20,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "action": {
+      "rowBackgroundColors": "> table | seriesByName(\"action\") | matchValue(actionBgConfig)"
+     },
+     "events": {
+      "data": "> table | seriesByName(\"events\") | formatByType(eventsFormat)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "actionBgConfig": [
+     {
+      "match": "blocked",
+      "value": "#3a1d20"
+     },
+     {
+      "match": "allowed",
+      "value": "#14301f"
+     },
+     {
+      "match": "unknown",
+      "value": "#22262b"
+     }
+    ],
+    "eventsFormat": {
+     "number": {
+      "thousandSeparated": true
+     }
+    }
+   },
+   "description": "Click a row to open the Host 360 view for that machine.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_host_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_host=$row.host.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "hdr_break": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Distribution",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_ports": {
+   "type": "splunk.bar",
+   "title": "Top services by verdict",
+   "dataSources": {
+    "primary": "ds_ports"
+   },
+   "options": {
+    "stackMode": "stacked",
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#8c9199"
+    ],
+    "legendDisplay": "bottom",
+    "xAxisTitleText": "Connections",
+    "yAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_countries": {
+   "type": "splunk.column",
+   "title": "Top destination countries",
+   "dataSources": {
+    "primary": "ds_countries"
+   },
+   "options": {
+    "seriesColors": [
+     "#4fa3ff"
+    ],
+    "legendDisplay": "off",
+    "yAxisTitleText": "Connections",
+    "xAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_raw": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Last 200 connections",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_raw": {
+   "type": "splunk.table",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_raw"
+   },
+   "options": {
+    "count": 20,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "action": {
+      "rowBackgroundColors": "> table | seriesByName(\"action\") | matchValue(actionBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "actionBgConfig": [
+     {
+      "match": "blocked",
+      "value": "#3a1d20"
+     },
+     {
+      "match": "allowed",
+      "value": "#14301f"
+     },
+     {
+      "match": "unknown",
+      "value": "#22262b"
+     }
+    ]
+   },
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  }
+ },
+ "dataSources": {
+  "ds_host_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats count WHERE index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\" BY host | fields host | sort host"
+   },
+   "name": "Host list"
+  },
+  "ds_traffic": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_traffic` $tk_exclusion$ | search host IN ($ms_host$) action IN ($ms_action$) src_ip=\"$tk_src$\" dest_ip=\"$tk_dest$\" dest_port=\"$tk_port$\" transport IN ($ms_transport$)"
+   },
+   "name": "Traffic base search"
+  },
+  "ds_kpi": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| stats count AS events, dc(host) AS hosts, dc(src_ip) AS sources, dc(dest_ip) AS destinations, dc(dest_port) AS ports"
+   },
+   "name": "KPI"
+  },
+  "ds_geo_table": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| iplocation src_ip prefix=src_ | iplocation dest_ip prefix=dest_ | eval src_Country = coalesce(src_Country, if(src_scope=\"internal\", \"Internal\", \"Unknown\")) | eval dest_Country = coalesce(dest_Country, if(dest_scope=\"internal\", \"Internal\", \"Unknown\")) | eval service = coalesce(dest_service, \"-\") | stats count AS events, sum(bytes) AS bytes, values(transport) AS transport, min(_time) AS first_seen, max(_time) AS last_seen BY host, src_ip, src_Country, dest_ip, dest_Country, dest_port, service, action | eval first_seen = strftime(first_seen, \"%F %T\"), last_seen = strftime(last_seen, \"%F %T\") | sort - events"
+   },
+   "name": "Destination port by region"
+  },
+  "ds_raw": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| table _time host action direction transport src_ip src_port dest_ip dest_port dest_service bytes process_id | sort - _time | head 200"
+   },
+   "name": "Raw connections"
+  },
+  "ds_ports": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval service = if(isnull(dest_service), \"port \".dest_port, dest_service.\" (\".dest_port.\")\") | chart count OVER service BY action | sort - allowed | head 15"
+   },
+   "name": "Ports by action"
+  },
+  "ds_countries": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| search dest_scope=external | iplocation dest_ip | search Country=* | stats count BY Country | sort - count | head 15"
+   },
+   "name": "Top countries"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-4h@h,now"
+   }
+  },
+  "input_host": {
+   "type": "input.multiselect",
+   "title": "Host",
+   "dataSources": {
+    "primary": "ds_host_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_host",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_action": {
+   "type": "input.multiselect",
+   "title": "Action",
+   "options": {
+    "token": "ms_action",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ",",
+    "items": [
+     {
+      "label": "All",
+      "value": "*"
+     },
+     {
+      "label": "Allowed",
+      "value": "allowed"
+     },
+     {
+      "label": "Blocked",
+      "value": "blocked"
+     }
+    ]
+   }
+  },
+  "input_transport": {
+   "type": "input.multiselect",
+   "title": "Transport",
+   "options": {
+    "token": "ms_transport",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ",",
+    "items": [
+     {
+      "label": "All",
+      "value": "*"
+     },
+     {
+      "label": "TCP",
+      "value": "tcp"
+     },
+     {
+      "label": "UDP",
+      "value": "udp"
+     },
+     {
+      "label": "ICMP",
+      "value": "icmp"
+     },
+     {
+      "label": "Other",
+      "value": "unknown"
+     }
+    ]
+   }
+  },
+  "input_src": {
+   "type": "input.text",
+   "title": "Source IP",
+   "options": {
+    "token": "tk_src",
+    "defaultValue": "*"
+   }
+  },
+  "input_dest": {
+   "type": "input.text",
+   "title": "Destination IP",
+   "options": {
+    "token": "tk_dest",
+    "defaultValue": "*"
+   }
+  },
+  "input_port": {
+   "type": "input.text",
+   "title": "Destination port",
+   "options": {
+    "token": "tk_port",
+    "defaultValue": "*"
+   }
+  },
+  "input_excl": {
+   "type": "input.dropdown",
+   "title": "Noise filter",
+   "options": {
+    "token": "tk_exclusion",
+    "defaultValue": "`ip_whitelist`",
+    "items": [
+     {
+      "label": "Exclude whitelisted ranges",
+      "value": "`ip_whitelist`"
+     },
+     {
+      "label": "No filtering",
+      "value": "| noop"
+     }
+    ]
+   }
+  }
+ },
+ "layout": {
+  "type": "grid",
+  "options": {
+   "width": 1440,
+   "submitButton": false,
+   "backgroundColor": "#0e1319"
+  },
+  "structure": [
+   {
+    "item": "hdr",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 0,
+     "w": 1440,
+     "h": 70
+    }
+   },
+   {
+    "item": "kpi_events",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 70,
+     "w": 288,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_hosts",
+    "type": "block",
+    "position": {
+     "x": 288,
+     "y": 70,
+     "w": 288,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_sources",
+    "type": "block",
+    "position": {
+     "x": 576,
+     "y": 70,
+     "w": 288,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_dest",
+    "type": "block",
+    "position": {
+     "x": 864,
+     "y": 70,
+     "w": 288,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_ports",
+    "type": "block",
+    "position": {
+     "x": 1152,
+     "y": 70,
+     "w": 288,
+     "h": 150
+    }
+   },
+   {
+    "item": "hdr_geo",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 220,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_geo_table",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 260,
+     "w": 1440,
+     "h": 560
+    }
+   },
+   {
+    "item": "hdr_break",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 820,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_ports",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 860,
+     "w": 792,
+     "h": 360
+    }
+   },
+   {
+    "item": "viz_countries",
+    "type": "block",
+    "position": {
+     "x": 792,
+     "y": 860,
+     "w": 648,
+     "h": 360
+    }
+   },
+   {
+    "item": "hdr_raw",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1220,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_raw",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1260,
+     "w": 1440,
+     "h": 540
+    }
+   }
+  ],
+  "globalInputs": [
+   "input_time",
+   "input_host",
+   "input_action",
+   "input_transport",
+   "input_src",
+   "input_dest",
+   "input_port",
+   "input_excl"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

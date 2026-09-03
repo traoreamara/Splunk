@@ -1,0 +1,685 @@
+<dashboard version="2" theme="dark">
+    <label>Traffic Explorer</label>
+    <description>Interactive exploration of the Windows Defender Firewall connection log: flow map, volume, services, remote peers and activity pattern.</description>
+    <definition><![CDATA[
+{
+ "title": "Traffic Explorer",
+ "description": "Interactive exploration of the Windows Defender Firewall connection log: flow map, volume, services, remote peers and activity pattern.",
+ "visualizations": {
+  "hdr": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "## Traffic Explorer\nFollow a flow from the host down to the service and the firewall verdict.",
+    "fontSize": "large",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "kpi_total": {
+   "type": "splunk.singlevalue",
+   "title": "Connections",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('total') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#dbe0e6"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_blocked": {
+   "type": "splunk.singlevalue",
+   "title": "Blocked",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('blocked') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#e5484d"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_peers": {
+   "type": "splunk.singlevalue",
+   "title": "Distinct peers",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('peers') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#4fa3ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_ports": {
+   "type": "splunk.singlevalue",
+   "title": "Distinct ports",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('ports') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 0,
+    "majorColor": "#a175ff"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_out": {
+   "type": "splunk.singlevalue",
+   "title": "Sent",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('mb_out') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 1,
+    "majorColor": "#31c2c9",
+    "unit": "MB",
+    "unitPosition": "after"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "kpi_in": {
+   "type": "splunk.singlevalue",
+   "title": "Received",
+   "dataSources": {
+    "primary": "ds_kpi"
+   },
+   "options": {
+    "majorValue": "> primary | seriesByName('mb_in') | lastPoint()",
+    "backgroundColor": "transparent",
+    "numberPrecision": 1,
+    "majorColor": "#31c2c9",
+    "unit": "MB",
+    "unitPosition": "after"
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_flow": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Flow map — host → service → verdict",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_sankey": {
+   "type": "splunk.sankey",
+   "title": "",
+   "dataSources": {
+    "primary": "ds_sankey"
+   },
+   "options": {},
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_time": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Volume",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_timechart": {
+   "type": "splunk.line",
+   "title": "Connections over time",
+   "dataSources": {
+    "primary": "ds_timechart"
+   },
+   "options": {
+    "seriesColors": [
+     "#2fb67c",
+     "#e5484d",
+     "#8c9199"
+    ],
+    "legendDisplay": "bottom",
+    "yAxisTitleText": "Connections",
+    "xAxisTitleText": "",
+    "lineWidth": 2
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "viz_bytes": {
+   "type": "splunk.area",
+   "title": "Bytes over time",
+   "dataSources": {
+    "primary": "ds_bytes"
+   },
+   "options": {
+    "stackMode": "stacked",
+    "seriesColors": [
+     "#31c2c9",
+     "#a175ff"
+    ],
+    "legendDisplay": "bottom",
+    "yAxisTitleText": "Bytes",
+    "xAxisTitleText": ""
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  },
+  "hdr_detail": {
+   "type": "splunk.markdown",
+   "options": {
+    "markdown": "### Breakdown",
+    "fontSize": "medium",
+    "fontColor": "#dbe0e6",
+    "backgroundColor": "transparent"
+   }
+  },
+  "viz_services": {
+   "type": "splunk.table",
+   "title": "Services contacted",
+   "dataSources": {
+    "primary": "ds_services"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "eventHandlers": [
+    {
+     "type": "drilldown.linkToSearch",
+     "options": {
+      "type": "auto",
+      "newTab": true
+     }
+    }
+   ]
+  },
+  "viz_peers": {
+   "type": "splunk.table",
+   "title": "Remote peers",
+   "dataSources": {
+    "primary": "ds_peers"
+   },
+   "options": {
+    "count": 12,
+    "dataOverlayMode": "none",
+    "backgroundColor": "transparent",
+    "tableFormat": {
+     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByBackgroundColor)"
+    },
+    "columnFormat": {
+     "scope": {
+      "rowBackgroundColors": "> table | seriesByName(\"scope\") | matchValue(scopeBgConfig)"
+     }
+    }
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false,
+   "context": {
+    "scopeBgConfig": [
+     {
+      "match": "external",
+      "value": "#3a2c17"
+     },
+     {
+      "match": "internal",
+      "value": "#16262f"
+     }
+    ]
+   },
+   "description": "Click a row to open the Peer pivot view for that address.",
+   "eventHandlers": [
+    {
+     "type": "drilldown.customUrl",
+     "options": {
+      "url": "/app/windows_firewall_app/windows_firewall_peer_view?form.global_time.earliest=$global_time.earliest$&form.global_time.latest=$global_time.latest$&form.tk_peer=$row.peer.value$",
+      "newTab": false
+     }
+    }
+   ]
+  },
+  "viz_punchcard": {
+   "type": "splunk.punchcard",
+   "title": "When does this traffic happen?",
+   "dataSources": {
+    "primary": "ds_punchcard"
+   },
+   "options": {
+    "seriesColors": [
+     "#4fa3ff"
+    ]
+   },
+   "showProgressBar": false,
+   "showLastUpdated": false
+  }
+ },
+ "dataSources": {
+  "ds_host_list": {
+   "type": "ds.search",
+   "options": {
+    "query": "| tstats count WHERE index IN `windows_firewall_index` sourcetype=\"windows:pfirewall\" BY host | fields host | sort host"
+   },
+   "name": "Host list"
+  },
+  "ds_traffic": {
+   "type": "ds.search",
+   "options": {
+    "query": "`wfo_traffic` $tk_exclusion$ | search host IN ($ms_host$) action IN ($ms_action$) direction IN ($ms_direction$) src_ip=\"$tk_src$\" dest_ip=\"$tk_dest$\" dest_port=\"$tk_port$\""
+   },
+   "name": "Traffic base search"
+  },
+  "ds_kpi": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| stats count AS total, count(eval(action=\"blocked\")) AS blocked, dc(dest_ip) AS peers, dc(dest_port) AS ports, sum(bytes_out) AS bo, sum(bytes_in) AS bi | eval mb_out = round(bo/1048576, 1), mb_in = round(bi/1048576, 1)"
+   },
+   "name": "KPI"
+  },
+  "ds_sankey": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval service = if(isnull(dest_service), \"port \".dest_port, dest_service) | stats count AS count BY host, service, action | eval link = mvappend(host.\"|\".service, service.\"|\".action) | mvexpand link | stats sum(count) AS count BY link | eval source = mvindex(split(link,\"|\"),0), target = mvindex(split(link,\"|\"),1) | fields source target count | sort - count | head 60"
+   },
+   "name": "Sankey host to service to action"
+  },
+  "ds_timechart": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| timechart span=10m count BY action"
+   },
+   "name": "Volume over time"
+  },
+  "ds_bytes": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| timechart span=10m sum(bytes_out) AS \"Bytes out\", sum(bytes_in) AS \"Bytes in\""
+   },
+   "name": "Volume in bytes"
+  },
+  "ds_services": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval service = if(isnull(dest_service), \"port \".dest_port, dest_service.\" (\".dest_port.\")\") | stats count AS connections, count(eval(action=\"blocked\")) AS blocked, dc(host) AS hosts, sum(bytes_out) AS bytes_out BY service, transport | eval blocked_pct = round(blocked*100/connections, 1) | sort - connections | head 25"
+   },
+   "name": "Services"
+  },
+  "ds_peers": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval peer = if(direction=\"inbound\", src_ip, dest_ip), scope = if(direction=\"inbound\", src_scope, dest_scope) | stats count AS connections, count(eval(action=\"blocked\")) AS blocked, dc(dest_port) AS ports, values(transport) AS transport, sum(bytes) AS bytes BY peer, scope | sort - connections | head 25"
+   },
+   "name": "Peers"
+  },
+  "ds_punchcard": {
+   "type": "ds.chain",
+   "options": {
+    "extend": "ds_traffic",
+    "query": "| eval day = strftime(_time, \"%a\"), hour = strftime(_time, \"%H\") | stats count BY day, hour"
+   },
+   "name": "Activity pattern"
+  }
+ },
+ "inputs": {
+  "input_time": {
+   "type": "input.timerange",
+   "title": "Time range",
+   "options": {
+    "token": "global_time",
+    "defaultValue": "-24h@h,now"
+   }
+  },
+  "input_host": {
+   "type": "input.multiselect",
+   "title": "Host",
+   "dataSources": {
+    "primary": "ds_host_list"
+   },
+   "options": {
+    "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+    "token": "ms_host",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ","
+   },
+   "context": {
+    "formattedConfig": {
+     "number": {
+      "prefix": ""
+     }
+    },
+    "formattedStatics": ">statics | formatByType(formattedConfig)",
+    "statics": [
+     {
+      "label": "All",
+      "value": "*"
+     }
+    ],
+    "label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+    "value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+   }
+  },
+  "input_action": {
+   "type": "input.multiselect",
+   "title": "Action",
+   "options": {
+    "token": "ms_action",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ",",
+    "items": [
+     {
+      "label": "All",
+      "value": "*"
+     },
+     {
+      "label": "Allowed",
+      "value": "allowed"
+     },
+     {
+      "label": "Blocked",
+      "value": "blocked"
+     }
+    ]
+   }
+  },
+  "input_direction": {
+   "type": "input.multiselect",
+   "title": "Direction",
+   "options": {
+    "token": "ms_direction",
+    "defaultValue": [
+     "*"
+    ],
+    "valuePrefix": "\"",
+    "valueSuffix": "\"",
+    "delimiter": ",",
+    "items": [
+     {
+      "label": "All",
+      "value": "*"
+     },
+     {
+      "label": "Inbound",
+      "value": "inbound"
+     },
+     {
+      "label": "Outbound",
+      "value": "outbound"
+     },
+     {
+      "label": "Unknown",
+      "value": "unknown"
+     }
+    ]
+   }
+  },
+  "input_src": {
+   "type": "input.text",
+   "title": "Source IP",
+   "options": {
+    "token": "tk_src",
+    "defaultValue": "*"
+   }
+  },
+  "input_dest": {
+   "type": "input.text",
+   "title": "Destination IP",
+   "options": {
+    "token": "tk_dest",
+    "defaultValue": "*"
+   }
+  },
+  "input_port": {
+   "type": "input.text",
+   "title": "Destination port",
+   "options": {
+    "token": "tk_port",
+    "defaultValue": "*"
+   }
+  },
+  "input_excl": {
+   "type": "input.dropdown",
+   "title": "Noise filter",
+   "options": {
+    "token": "tk_exclusion",
+    "defaultValue": "`ip_whitelist`",
+    "items": [
+     {
+      "label": "Exclude whitelisted ranges",
+      "value": "`ip_whitelist`"
+     },
+     {
+      "label": "No filtering",
+      "value": "| noop"
+     }
+    ]
+   }
+  }
+ },
+ "layout": {
+  "type": "grid",
+  "options": {
+   "width": 1440,
+   "submitButton": false,
+   "backgroundColor": "#0e1319"
+  },
+  "structure": [
+   {
+    "item": "hdr",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 0,
+     "w": 1440,
+     "h": 70
+    }
+   },
+   {
+    "item": "kpi_total",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_blocked",
+    "type": "block",
+    "position": {
+     "x": 240,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_peers",
+    "type": "block",
+    "position": {
+     "x": 480,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_ports",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_out",
+    "type": "block",
+    "position": {
+     "x": 960,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "kpi_in",
+    "type": "block",
+    "position": {
+     "x": 1200,
+     "y": 70,
+     "w": 240,
+     "h": 150
+    }
+   },
+   {
+    "item": "hdr_flow",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 220,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_sankey",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 260,
+     "w": 1440,
+     "h": 520
+    }
+   },
+   {
+    "item": "hdr_time",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 780,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_timechart",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 820,
+     "w": 720,
+     "h": 300
+    }
+   },
+   {
+    "item": "viz_bytes",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 820,
+     "w": 720,
+     "h": 300
+    }
+   },
+   {
+    "item": "hdr_detail",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1120,
+     "w": 1440,
+     "h": 40
+    }
+   },
+   {
+    "item": "viz_services",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1160,
+     "w": 720,
+     "h": 420
+    }
+   },
+   {
+    "item": "viz_peers",
+    "type": "block",
+    "position": {
+     "x": 720,
+     "y": 1160,
+     "w": 720,
+     "h": 420
+    }
+   },
+   {
+    "item": "viz_punchcard",
+    "type": "block",
+    "position": {
+     "x": 0,
+     "y": 1580,
+     "w": 1440,
+     "h": 320
+    }
+   }
+  ],
+  "globalInputs": [
+   "input_time",
+   "input_host",
+   "input_action",
+   "input_direction",
+   "input_src",
+   "input_dest",
+   "input_port",
+   "input_excl"
+  ]
+ },
+ "defaults": {
+  "dataSources": {
+   "ds.search": {
+    "options": {
+     "queryParameters": {
+      "earliest": "$global_time.earliest$",
+      "latest": "$global_time.latest$"
+     }
+    }
+   }
+  }
+ }
+}
+]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

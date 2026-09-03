@@ -1,0 +1,18 @@
+/* Change table header background color */
+.dashboard-row .dashboard-panel .panel-element-row .table thead th {
+  background-color: #444752 ;
+  color: white;
+}
+
+/* Change border color */
+.dashboard-row .dashboard-panel .panel-element-row .table {
+    border: 3px solid #000000;
+}
+
+.dashboard-row .dashboard-panel .panel-element-row .table th {
+    border: 3px solid #ddd;
+}
+
+.dashboard-row .dashboard-panel .panel-element-row .table td {
+    border: 1px solid #ddd;
+}

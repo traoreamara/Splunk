@@ -1,0 +1,42 @@
+/* Microsoft Windows Firewall Observability - setup page */
+.wfo-setup {
+  max-width: 980px;
+  margin: 24px auto;
+  padding: 0 16px;
+  font-family: "Splunk Platform Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1a1c20;
+}
+.wfo-setup h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+.wfo-setup-sub { color: #5c6773; margin: 0 0 24px; font-size: 14px; }
+.wfo-setup-card {
+  background: #ffffff;
+  border: 1px solid #e1e6eb;
+  border-radius: 8px;
+  padding: 20px 24px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.wfo-setup-card h2 { font-size: 16px; font-weight: 600; margin: 0 0 16px; }
+.wfo-setup-table { width: 100%; border-collapse: collapse; }
+.wfo-setup-table th {
+  text-align: left; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .04em; color: #5c6773; font-weight: 600;
+  border-bottom: 1px solid #e1e6eb; padding: 0 12px 8px 0;
+}
+.wfo-setup-table td { padding: 14px 12px 14px 0; vertical-align: top; border-bottom: 1px solid #f2f4f7; }
+.wfo-setup-table .parameterCell label { font-weight: 600; font-size: 14px; white-space: nowrap; }
+.wfo-setup-table input[type="text"] {
+  width: 320px; max-width: 100%; padding: 7px 10px; font-size: 14px;
+  border: 1px solid #c3cbd4; border-radius: 4px; background: #fff; color: #1a1c20;
+}
+.wfo-setup-table input[type="text"]:focus { outline: none; border-color: #0b5fff; box-shadow: 0 0 0 2px rgba(11,95,255,.18); }
+.wfo-setup-table .descriptionCell { color: #5c6773; font-size: 13px; line-height: 1.45; }
+.wfo-setup-button {
+  margin-top: 20px; padding: 9px 22px; font-size: 14px; font-weight: 600;
+  color: #fff; background: #0b5fff; border: 0; border-radius: 4px; cursor: pointer;
+}
+.wfo-setup-button:hover { background: #0a4fd6; }
+.wfo-setup-button:disabled { background: #9bb7f0; cursor: default; }
+.wfo-setup .success, .wfo-setup .error { display: none; margin-top: 18px; padding: 12px 16px; border-radius: 4px; font-size: 14px; }
+.wfo-setup .success.visible { display: block; background: #e8f5ec; border: 1px solid #56a64b; color: #1c4a24; }
+.wfo-setup .error.visible { display: block; background: #fdecec; border: 1px solid #d41f1f; color: #7a1414; }
+.wfo-setup .error code { display: block; margin-top: 6px; font-family: Menlo, Consolas, monospace; font-size: 12px; }
