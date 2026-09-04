@@ -9,7 +9,7 @@ Privileged Access Management syslog events.
 | Vendor product | WALLIX Bastion 6.x – 12.x |
 | Splunk | Enterprise ≥ 8.2, Splunk Cloud |
 | Splunk CIM | 5.3.x (Authentication, Change, Network Traffic, Endpoint) |
-| Index-time operations | **yes** — sourcetype routing (see *Where to install*) |
+| Index-time operations | **yes** — sourcetype routing (see *Install the add-on*) |
 | Scripts / binaries | **none** — search-time knowledge objects only |
 | License | Apache-2.0 |
 
@@ -42,7 +42,87 @@ commonly pair a BSD envelope with a double-quoted payload.
 
 ---
 
-## 2. Getting the data in
+---
+
+## 2. Choose how you collect
+
+WALLIX Bastion only speaks syslog. Four ways to get that stream into Splunk;
+they are alternatives, not steps. Pick one now - it decides where the add-on
+has to be installed, in section 3. The detail of each is in section 4.
+
+| | Method | Use it when |
+|---|---|---|
+| **a** | Splunk Connect for Syslog (SC4S) | Default choice. Buffers to disk, posts to HEC on the indexers. |
+| **b** | Direct TCP input on a heavy forwarder | Small estate, no SC4S. No disk buffer: a restart loses what was in flight. |
+| **c** | Syslog relay writing files + universal forwarder | You want the files themselves as a replay buffer. |
+| **d** | Relay converting syslog to HEC | Splunk Cloud with no on-prem heavy forwarder. |
+
+---
+
+## 3. Install the add-on
+
+### Where it goes
+
+Find your collection method in the left column. The rows are alternatives, not
+a checklist.
+
+| Collection method (from section 2) | Install the add-on on |
+|---|---|
+| **a.** SC4S | indexers + search heads |
+| **b.** TCP input on a heavy forwarder | heavy forwarder + search heads |
+| **c.** Syslog relay + universal forwarder reading files | universal forwarder + indexers + search heads |
+| **d.** Relay to HEC | indexers + search heads |
+
+Search head clustering: deploy through the deployer, as usual.
+
+### If a universal forwarder is in the path
+
+Only method **c**. The UF assigns the sourcetype and index from `inputs.conf`,
+then forwards the stream unparsed, so the add-on is needed on the UF *and* on
+the indexers.
+
+`EVENT_BREAKER_ENABLE = true` in this add-on's `props.conf` is what makes that
+safe. A UF ignores `LINE_BREAKER`, and when it rotates to the next indexer it
+will cut the stream mid-event unless an event breaker tells it where the
+boundaries are. The symptom is truncated and merged events that look like a
+regex bug and are not one.
+
+There is no universal forwarder in the SC4S path. SC4S posts to HEC on the
+indexers directly.
+
+### If you only install it on the search head
+
+Search-time extractions are declared on the parent `wallix:bastion` sourcetype
+as well as on each routed one, so you still get fields. You lose the per-family
+sourcetype split and the CIM mapping that hangs off it. Useful for a quick
+look, not a deployment.
+
+### How to install it
+
+**Splunk Enterprise, from Splunkbase.** *Apps > Find More Apps*, search
+`WALLIX Bastion Add-on`, *Install*. Or download the archive and use
+*Apps > Manage Apps > Install app from file*.
+
+**Splunk Enterprise, by hand.** Unpack the archive into
+`$SPLUNK_HOME/etc/apps/` so that `TA-wallix-bastion/default/` exists, keeping
+the directory name `TA-wallix-bastion`.
+
+Restart Splunk on every instance where you installed it. The sourcetype
+routing is index-time and does not take effect until the parsing tier has
+restarted.
+
+**Search head cluster.** Place it in the deployer's `etc/shcluster/apps/` and
+push with `splunk apply shcluster-bundle`. Do not copy it onto the members by
+hand.
+
+**Splunk Cloud.** Install from the Splunkbase tab in Splunk Web.
+
+**Your own settings go in `local/`.** Anything you put in `default/` is
+replaced on the next upgrade.
+
+---
+
+## 4. Getting the data in
 
 ### On the Bastion — syslog, and only syslog
 
@@ -156,45 +236,22 @@ the four models this add-on populates:
 [cim_Authentication_indexes]
 definition = (index=your_existing_indexes OR index=wallix_bastion)
 ```
+
 ---
 
-## 3. Where to install
+## 5. Verify
 
-Find your collection method in the left column. The rows are alternatives, not
-a checklist.
+In this order. The first one that comes back wrong names the layer at fault.
 
-| Collection method (from §2) | Install the add-on on |
-|---|---|
-| **a.** SC4S | indexers + search heads |
-| **b.** TCP input on a heavy forwarder | heavy forwarder + search heads |
-| **c.** Syslog relay + universal forwarder reading files | universal forwarder + indexers + search heads |
-| **d.** Relay to HEC | indexers + search heads |
+**Events are arriving**
 
-Search head clustering: deploy through the deployer, as usual.
+```spl
+index=wallix_bastion | stats count by sourcetype, host
+```
 
-### If a universal forwarder is in the path
+Nothing at all is collection: the Bastion, the network path, or the input.
 
-Only method **c**. The UF assigns the sourcetype and index from `inputs.conf`,
-then forwards the stream unparsed, so the add-on is needed on the UF *and* on
-the indexers.
-
-`EVENT_BREAKER_ENABLE = true` in this add-on's `props.conf` is what makes that
-safe. A UF ignores `LINE_BREAKER`, and when it rotates to the next indexer it
-will cut the stream mid-event unless an event breaker tells it where the
-boundaries are. The symptom is truncated and merged events that look like a
-regex bug and are not one.
-
-There is no universal forwarder in the SC4S path. SC4S posts to HEC on the
-indexers directly.
-
-### If you only install it on the search head
-
-Search-time extractions are declared on the parent `wallix:bastion` sourcetype
-as well as on each routed one, so you still get fields. You lose the per-family
-sourcetype split and the CIM mapping that hangs off it. Useful for a quick
-look, not a deployment.
-
-### Checking which tier actually parsed
+**The routing ran**
 
 ```spl
 index=wallix_bastion | stats count by sourcetype
@@ -202,9 +259,28 @@ index=wallix_bastion | stats count by sourcetype
 
 Everything sitting on the bare `wallix:bastion` means the routing never ran:
 the add-on is missing from the parsing tier, or that tier was not restarted.
+
+**The fields are there**
+
+```spl
+index=wallix_bastion sourcetype=wallix:bastion:session
+| table _time, user, src, dest, wallix_service, wallix_type, action | head 20
+```
+
+**The data models are populated**
+
+```spl
+| tstats count from datamodel=Authentication
+  where Authentication.authentication_service="wallix:bastion"
+  by Authentication.action
+```
+
+Fields present but the model empty is almost always the CIM index scope - see
+*Then add that index to the CIM scope* in section 4.
+
 ---
 
-## 4. Fields and CIM mapping
+## 6. Fields and CIM mapping
 
 Vendor fields are prefixed `wallix_`, keeping the WALLIX key name verbatim after
 the prefix (`action="add"` → `wallix_action=add`). CIM fields are computed on
@@ -229,7 +305,7 @@ mapped to `src_nt_domain`. Change, Network Traffic and Endpoint do carry
 
 A data model that stays empty while the raw search returns events is almost
 always the CIM index scope - see *Then add that index to the CIM scope* in
-section 2.
+section 4.
 
 In an estate with several appliances, `wallix_syslog_host` carries the name the
 emitting Bastion put in its own syslog header. Splunk's `host` may say
@@ -248,7 +324,7 @@ wallix_bastion_keystrokes                  KBD_INPUT
 
 ---
 
-## 5. Search macros
+## 7. Search macros
 
 ```
 `wallix_bastion`            all events
@@ -275,7 +351,7 @@ Examples:
 ```
 ---
 
-## 6. Coming from `TA-WALLIX_Bastion` 1.0.x
+## 8. Coming from `TA-WALLIX_Bastion` 1.0.x
 
 Every `WB_*` field of the archived WALLIX add-on is provided as a `FIELDALIAS`,
 and the legacy `WB:syslog` sourcetype is still recognised, so both add-ons can
@@ -284,7 +360,7 @@ run side by side. To get the CIM mapping, re-point your inputs to
 
 ---
 
-## 7. Companion app
+## 9. Companion app
 
 `SA-wallix-advanced-monitoring` builds on this add-on: four Dashboard Studio
 views over privileged access, session content, the administration audit trail
@@ -294,7 +370,7 @@ one it is pure configuration - no Python, no binaries.
 
 ---
 
-## 8. Reporting a parsing problem
+## 10. Reporting a parsing problem
 
 WALLIX emits seven log families across two envelope formats and two payload
 dialects, and an appliance only sends what its SIEM Integration is configured
@@ -334,8 +410,8 @@ counts and redacted skeletons - no values. Send those, never the events.
 
 ---
 
-## 9. Support
+## 11. Support
 
 Report problems through the Q&A tab of this add-on's Splunkbase page, with the
-three outputs from section 8 attached. This add-on is community-maintained and
+three outputs from section 10 attached. This add-on is community-maintained and
 is not affiliated with or endorsed by WALLIX.
