@@ -75,9 +75,9 @@ wallix_bastion,sourcetype,wallix:bastion
 ```
 
 If you need sc4s full runbook, including HEC on the indexers, check link below: 
-`SC4S-DEPLOYMENT-podman.md`: https://github.com/traoreamara/Splunk/blob/7416fd81705051e6d5090278cc6f694f7c98bcf6/Splunkbase/WALLIX/sc4s-wallix-podman-deployment.md
+`SC4S-DEPLOYMENT-podman.md`: https://github.com/traoreamara/Splunk/blob/f51bdfa7834ca284023d679f21dcc31e62605f10/Splunkbase/WALLIX/sc4s-wallix-podman-deployment.md
 or
-`SC4S-DEPLOYMENT-docker.md`: https://github.com/traoreamara/Splunk/blob/7416fd81705051e6d5090278cc6f694f7c98bcf6/Splunkbase/WALLIX/sc4s-wallix-docker-deployment.md 
+`SC4S-DEPLOYMENT-docker.md`: https://github.com/traoreamara/Splunk/blob/f51bdfa7834ca284023d679f21dcc31e62605f10/Splunkbase/WALLIX/sc4s-wallix-docker-deployment.md
 .
 
 **b. Direct TCP input.** Create the stanza yourself in `local/inputs.conf`. A
