@@ -1,12 +1,15 @@
 # WALLIX Advanced Monitoring (`SA-wallix-advanced-monitoring`)
 
 Dashboards and detections for **WALLIX Bastion** privileged access. Companion
-to [`TA-wallix-bastion`](../TA-wallix-bastion), which does the parsing.
+to `TA-wallix-bastion`, which does the parsing and the CIM mapping. Install
+that add-on first: without it these views have nothing to read.
 
 | | |
 |---|---|
 | Version | 1.0.0 |
-| Requires | `TA-wallix-bastion` >= 1.0.0, Splunk Enterprise >= 8.2 |
+| Splunk | Enterprise >= 8.2, Splunk Cloud |
+| Requires | `TA-wallix-bastion` >= 1.0.0, on the same search heads |
+| Install on | search heads only |
 | Scripts / binaries | **none** — dashboards, searches and macros only |
 | License | Apache-2.0 |
 
@@ -32,15 +35,29 @@ turning scheduling on.
 
 ## 2. Setup
 
+Install `TA-wallix-bastion` first. This app reads the sourcetypes and
+eventtypes that add-on produces.
+
+**Splunk Cloud.** Install from the Splunkbase tab in Splunk Web.
+
+**Splunk Enterprise, from Splunkbase.** *Apps > Find More Apps*, search
+`WALLIX Advanced Monitoring`, *Install*. Or download the archive and use
+*Apps > Manage Apps > Install app from file*.
+
+**Splunk Enterprise, by hand.**
+
 ```bash
 sudo tar -xzf SA-wallix-advanced-monitoring-1.0.0.tar.gz -C $SPLUNK_HOME/etc/apps/
 sudo $SPLUNK_HOME/bin/splunk restart
 ```
 
-Install on the **search head** (or through the deployer, on a cluster). Nothing
-in this app belongs on an indexer, and it carries no configuration of its own:
-the index is selected by `TA-wallix-bastion`'s `wallix_bastion_index` macro,
-which you override there if you use a different index name.
+**Search head cluster.** Place it in the deployer's `etc/shcluster/apps/` and
+push with `splunk apply shcluster-bundle`.
+
+Install on the **search heads** only. Nothing in this app belongs on an
+indexer, and it carries no configuration of its own: the index is selected by
+`TA-wallix-bastion`'s `wallix_bastion_index` macro, which you override there if
+you use a different index name.
 
 Two macros are yours to set, in `local/macros.conf`, before the detections that
 depend on them mean anything:
