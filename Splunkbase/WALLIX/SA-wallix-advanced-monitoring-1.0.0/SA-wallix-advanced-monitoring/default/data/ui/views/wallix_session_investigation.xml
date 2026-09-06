@@ -1,0 +1,543 @@
+<dashboard version="2" theme="light">
+  <label>Session Investigation</label>
+  <description>Everything that happened inside a privileged session: commands, windows, file transfers, clipboard, and whether the recording survived its integrity check.</description>
+  <definition><![CDATA[
+{
+  "title": "Session Investigation",
+  "description": "Everything that happened inside a privileged session: commands, windows, file transfers, clipboard, and whether the recording survived its integrity check.",
+  "visualizations": {
+    "viz_3": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Session Investigation\nPick an operator, a target, or paste a session id. Leave a filter at `*` to widen. Everything below is scoped to the three inputs."
+      }
+    },
+    "viz_5": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Sessions",
+      "dataSources": {
+        "primary": "ds_4"
+      }
+    },
+    "viz_7": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Distinct targets",
+      "dataSources": {
+        "primary": "ds_6"
+      }
+    },
+    "viz_9": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Privileged accounts",
+      "dataSources": {
+        "primary": "ds_8"
+      }
+    },
+    "viz_11": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Commands observed",
+      "dataSources": {
+        "primary": "ds_10"
+      }
+    },
+    "viz_13": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "File transfers",
+      "dataSources": {
+        "primary": "ds_12"
+      }
+    },
+    "viz_15": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Clipboard out",
+      "dataSources": {
+        "primary": "ds_14"
+      }
+    },
+    "viz_17": {
+      "type": "splunk.bar",
+      "options": {
+        "legendDisplay": "off",
+        "seriesColors": "[#0877A6]",
+        "yAxisTitleText": ""
+      },
+      "title": "In-session activity by event type",
+      "dataSources": {
+        "primary": "ds_16"
+      }
+    },
+    "viz_19": {
+      "type": "splunk.column",
+      "options": {
+        "stackMode": "stacked",
+        "legendDisplay": "right",
+        "xAxisTitleText": "",
+        "yAxisTitleText": "events"
+      },
+      "title": "Activity over time",
+      "dataSources": {
+        "primary": "ds_18"
+      }
+    },
+    "viz_21": {
+      "type": "splunk.table",
+      "options": {
+        "count": 20,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Commands and processes launched on the target",
+      "dataSources": {
+        "primary": "ds_20"
+      },
+      "description": "RDP NEW_PROCESS / COMPLETED_PROCESS events, mapped to the Endpoint data model."
+    },
+    "viz_23": {
+      "type": "splunk.table",
+      "options": {
+        "count": 15,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Data leaving or entering the session",
+      "dataSources": {
+        "primary": "ds_22"
+      },
+      "description": "SFTP, RDP drive redirection and clipboard events."
+    },
+    "viz_25": {
+      "type": "splunk.table",
+      "options": {
+        "count": 15,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Session recording integrity",
+      "dataSources": {
+        "primary": "ds_24"
+      },
+      "description": "A failed check means the recording cannot be trusted as evidence."
+    }
+  },
+  "dataSources": {
+    "ds_1": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` | stats count BY wallix_user | sort - count",
+        "queryParameters": {
+          "earliest": "-7d@d",
+          "latest": "now"
+        }
+      },
+      "name": "User picker"
+    },
+    "ds_2": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_device=* | stats count BY wallix_device | sort - count",
+        "queryParameters": {
+          "earliest": "-7d@d",
+          "latest": "now"
+        }
+      },
+      "name": "Target picker"
+    },
+    "ds_4": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\n| stats dc(wallix_session_id) AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Sessions"
+    },
+    "ds_6": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\n| stats dc(wallix_device) AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Distinct targets"
+    },
+    "ds_8": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\n| stats dc(wallix_account) AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Privileged accounts"
+    },
+    "ds_10": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\nwallix_type IN (NEW_PROCESS, COMPLETED_PROCESS) | stats count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Commands observed"
+    },
+    "ds_12": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\neventtype=wallix_bastion_file_transfer | stats count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "File transfers"
+    },
+    "ds_14": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\neventtype=wallix_bastion_clipboard_exfiltration | stats count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Clipboard out"
+    },
+    "ds_16": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\n| stats count BY wallix_type\n| sort - count | head 15",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Activity breakdown"
+    },
+    "ds_18": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\n| timechart span=5m count BY wallix_type limit=8",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Activity over time"
+    },
+    "ds_20": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\nwallix_type IN (NEW_PROCESS, COMPLETED_PROCESS) wallix_command_line=*\n| table _time wallix_user wallix_account wallix_device process_name wallix_command_line wallix_session_id\n| rename wallix_user AS operator, wallix_account AS account, wallix_device AS target, process_name AS process, wallix_command_line AS \"command line\", wallix_session_id AS \"session id\"\n| sort - _time | head 200",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Commands and processes"
+    },
+    "ds_22": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_user=\"$user_tok$\" wallix_device=\"$device_tok$\" wallix_session_id=\"$session_tok$\"\n(eventtype=wallix_bastion_file_transfer OR eventtype=wallix_bastion_clipboard_exfiltration)\n| eval what = case(eventtype=\"wallix_bastion_clipboard_exfiltration\",\"clipboard OUT\", true(), wallix_type)\n| table _time wallix_user wallix_account wallix_device what wallix_data wallix_status\n| rename wallix_user AS operator, wallix_account AS account, wallix_device AS target, wallix_data AS detail, wallix_status AS status\n| sort - _time | head 100",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Data movement"
+    },
+    "ds_24": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_index` sourcetype=wallix:bastion:integrity wallix_user=\"$user_tok$\"\n| table _time wallix_status wallix_target_account wallix_target_host wallix_type wallix_begin wallix_end file_name\n| rename wallix_status AS status, wallix_target_account AS account, wallix_target_host AS target, wallix_type AS protocol, wallix_begin AS begin, wallix_end AS end, file_name AS recording\n| sort - _time | head 50",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Recording integrity"
+    }
+  },
+  "inputs": {
+    "input_time": {
+      "type": "input.timerange",
+      "options": {
+        "token": "time_tok",
+        "defaultValue": "-7d@d,now"
+      },
+      "title": "Time range"
+    },
+    "input_user_tok": {
+      "type": "input.dropdown",
+      "dataSources": {
+        "primary": "ds_1"
+      },
+      "options": {
+        "token": "user_tok",
+        "defaultValue": "*",
+        "items": [
+          {
+            "label": "All",
+            "value": "*"
+          }
+        ],
+        "selectFirstSearchResult": false
+      },
+      "context": {
+        "formattedConfig": {
+          "label": {
+            "value": "wallix_user",
+            "selectedLabel": "Field"
+          },
+          "value": {
+            "value": "wallix_user",
+            "selectedValue": "Field"
+          }
+        }
+      },
+      "encoding": {
+        "label": "primary.wallix_user",
+        "value": "primary.wallix_user"
+      },
+      "title": "Operator"
+    },
+    "input_device_tok": {
+      "type": "input.dropdown",
+      "dataSources": {
+        "primary": "ds_2"
+      },
+      "options": {
+        "token": "device_tok",
+        "defaultValue": "*",
+        "items": [
+          {
+            "label": "All",
+            "value": "*"
+          }
+        ],
+        "selectFirstSearchResult": false
+      },
+      "context": {
+        "formattedConfig": {
+          "label": {
+            "value": "wallix_device",
+            "selectedLabel": "Field"
+          },
+          "value": {
+            "value": "wallix_device",
+            "selectedValue": "Field"
+          }
+        }
+      },
+      "encoding": {
+        "label": "primary.wallix_device",
+        "value": "primary.wallix_device"
+      },
+      "title": "Target device"
+    },
+    "input_session_tok": {
+      "type": "input.text",
+      "options": {
+        "token": "session_tok",
+        "defaultValue": "*"
+      },
+      "title": "Session ID (optional)"
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1294,
+      "display": "auto-scale",
+      "backgroundColor": "transparent"
+    },
+    "structure": [
+      {
+        "item": "viz_3",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_5",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_7",
+        "type": "block",
+        "position": {
+          "x": 242,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_9",
+        "type": "block",
+        "position": {
+          "x": 484,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_11",
+        "type": "block",
+        "position": {
+          "x": 726,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_13",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_15",
+        "type": "block",
+        "position": {
+          "x": 1210,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_17",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 222,
+          "w": 593,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_19",
+        "type": "block",
+        "position": {
+          "x": 605,
+          "y": 222,
+          "w": 835,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_21",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 558,
+          "w": 1440,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_23",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 934,
+          "w": 835,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_25",
+        "type": "block",
+        "position": {
+          "x": 847,
+          "y": 934,
+          "w": 593,
+          "h": 320
+        }
+      }
+    ],
+    "globalInputs": [
+      "input_time",
+      "input_user_tok",
+      "input_device_tok",
+      "input_session_tok"
+    ]
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {}
+        }
+      }
+    }
+  }
+}
+]]></definition>
+  <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

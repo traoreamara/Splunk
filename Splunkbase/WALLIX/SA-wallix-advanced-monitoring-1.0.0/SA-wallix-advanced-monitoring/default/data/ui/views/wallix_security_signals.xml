@@ -1,0 +1,423 @@
+<dashboard version="2" theme="light">
+  <label>Security Signals</label>
+  <description>The high-value security signals the Bastion emits: forbidden patterns, clipboard exfiltration, recording integrity failures, file transfers and killed sessions.</description>
+  <definition><![CDATA[
+{
+  "title": "Security Signals",
+  "description": "The high-value security signals the Bastion emits: forbidden patterns, clipboard exfiltration, recording integrity failures, file transfers and killed sessions.",
+  "visualizations": {
+    "viz_1": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Security Signals\nWhat the Bastion saw that is worth acting on. Each tile is an eventtype TA-wallix-bastion assigns; the table below carries the session id you need to investigate a row in the Bastion itself."
+      }
+    },
+    "viz_3": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#B12F2F"
+      },
+      "title": "Forbidden patterns",
+      "dataSources": {
+        "primary": "ds_2"
+      }
+    },
+    "viz_5": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#D6563C"
+      },
+      "title": "Clipboard exfiltration",
+      "dataSources": {
+        "primary": "ds_4"
+      }
+    },
+    "viz_7": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#B12F2F"
+      },
+      "title": "Integrity failures",
+      "dataSources": {
+        "primary": "ds_6"
+      }
+    },
+    "viz_9": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#0877A6"
+      },
+      "title": "File transfers",
+      "dataSources": {
+        "primary": "ds_8"
+      }
+    },
+    "viz_11": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#F8BE34"
+      },
+      "title": "Auth failures",
+      "dataSources": {
+        "primary": "ds_10"
+      }
+    },
+    "viz_13": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Sessions killed",
+      "dataSources": {
+        "primary": "ds_12"
+      }
+    },
+    "viz_15": {
+      "type": "splunk.column",
+      "options": {
+        "stackMode": "stacked",
+        "legendDisplay": "right",
+        "xAxisTitleText": "",
+        "yAxisTitleText": "signals",
+        "seriesColors": "[#D6563C,#B12F2F,#F8BE34,#0877A6]"
+      },
+      "title": "Security signals over time",
+      "dataSources": {
+        "primary": "ds_14"
+      }
+    },
+    "viz_17": {
+      "type": "splunk.table",
+      "options": {
+        "count": 20,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Signals, most recent first",
+      "dataSources": {
+        "primary": "ds_16"
+      },
+      "description": "The session id column is what you search on to pull the whole session back with `wallix_bastion_sessions`."
+    },
+    "viz_19": {
+      "type": "splunk.table",
+      "options": {
+        "count": 25,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Who is generating the signals",
+      "dataSources": {
+        "primary": "ds_18"
+      },
+      "description": "One row per operator. A single operator concentrating several kinds of signal is the pattern worth opening."
+    },
+    "viz_21": {
+      "type": "splunk.bar",
+      "options": {
+        "legendDisplay": "bottom",
+        "seriesColors": "[#D6563C,#B12F2F,#F8BE34,#0877A6]",
+        "yAxisTitleText": ""
+      },
+      "title": "Signals by kind",
+      "dataSources": {
+        "primary": "ds_20"
+      }
+    }
+  },
+  "dataSources": {
+    "ds_2": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` eventtype=wallix_bastion_forbidden_pattern | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Forbidden patterns"
+    },
+    "ds_4": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` eventtype=wallix_bastion_clipboard_exfiltration | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Clipboard exfiltration"
+    },
+    "ds_6": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` eventtype=wallix_bastion_session_integrity_failure | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Integrity failures"
+    },
+    "ds_8": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` eventtype=wallix_bastion_file_transfer | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "File transfers"
+    },
+    "ds_10": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` sourcetype=wallix:bastion:auth action=failure | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Auth failures"
+    },
+    "ds_12": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_type=SESSION_KILLED | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Sessions killed"
+    },
+    "ds_14": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (eventtype=wallix_bastion_forbidden_pattern OR eventtype=wallix_bastion_clipboard_exfiltration OR eventtype=wallix_bastion_session_integrity_failure OR eventtype=wallix_bastion_file_transfer)\n| eval signal = case(eventtype=\"wallix_bastion_forbidden_pattern\",\"Forbidden pattern\",eventtype=\"wallix_bastion_clipboard_exfiltration\",\"Clipboard out\",eventtype=\"wallix_bastion_session_integrity_failure\",\"Integrity failure\",true(),\"File transfer\")\n| timechart span=15m count BY signal",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Signals over time"
+    },
+    "ds_16": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (eventtype=wallix_bastion_forbidden_pattern OR eventtype=wallix_bastion_clipboard_exfiltration OR eventtype=wallix_bastion_session_integrity_failure)\n| eval target = coalesce(wallix_account,\"?\") . \"@\" . coalesce(wallix_device, wallix_target_host, wallix_target_ip, \"?\")\n| table _time severity wallix_type wallix_user target wallix_client_ip wallix_data wallix_session_id\n| rename severity AS sev, wallix_type AS signal, wallix_user AS operator, wallix_client_ip AS source, wallix_data AS detail, wallix_session_id AS \"session id\"\n| sort - _time | head 100",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Signal detail"
+    },
+    "ds_18": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (eventtype=wallix_bastion_forbidden_pattern OR eventtype=wallix_bastion_clipboard_exfiltration OR eventtype=wallix_bastion_session_integrity_failure OR eventtype=wallix_bastion_file_transfer)\n| eval operator = coalesce(wallix_user, user, \"?\")\n| stats count AS signals dc(wallix_session_id) AS sessions values(wallix_type) AS kinds BY operator\n| sort - signals | head 25",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Signals by operator"
+    },
+    "ds_20": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (eventtype=wallix_bastion_forbidden_pattern OR eventtype=wallix_bastion_clipboard_exfiltration OR eventtype=wallix_bastion_session_integrity_failure OR eventtype=wallix_bastion_file_transfer)\n| eval signal = case(eventtype=\"wallix_bastion_forbidden_pattern\",\"Forbidden pattern\",eventtype=\"wallix_bastion_clipboard_exfiltration\",\"Clipboard out\",eventtype=\"wallix_bastion_session_integrity_failure\",\"Integrity failure\",true(),\"File transfer\")\n| stats count BY signal",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Signals by kind"
+    }
+  },
+  "inputs": {
+    "input_time": {
+      "type": "input.timerange",
+      "options": {
+        "token": "time_tok",
+        "defaultValue": "-24h@h,now"
+      },
+      "title": "Time range"
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1294,
+      "display": "auto-scale",
+      "backgroundColor": "transparent"
+    },
+    "structure": [
+      {
+        "item": "viz_1",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_3",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_5",
+        "type": "block",
+        "position": {
+          "x": 242,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_7",
+        "type": "block",
+        "position": {
+          "x": 484,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_9",
+        "type": "block",
+        "position": {
+          "x": 726,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_11",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_13",
+        "type": "block",
+        "position": {
+          "x": 1210,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_15",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 222,
+          "w": 1440,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_17",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 518,
+          "w": 1440,
+          "h": 380
+        }
+      },
+      {
+        "item": "viz_19",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 914,
+          "w": 956,
+          "h": 340
+        }
+      },
+      {
+        "item": "viz_21",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 914,
+          "w": 472,
+          "h": 340
+        }
+      }
+    ],
+    "globalInputs": [
+      "input_time"
+    ]
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {}
+        }
+      }
+    }
+  }
+}
+]]></definition>
+  <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

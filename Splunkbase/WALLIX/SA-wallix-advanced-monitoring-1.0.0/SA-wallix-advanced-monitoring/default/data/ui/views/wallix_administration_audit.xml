@@ -1,0 +1,454 @@
+<dashboard version="2" theme="light">
+  <label>Administration Audit Trail</label>
+  <description>Every change made to the Bastion's own configuration: who changed what, when, and from where.</description>
+  <definition><![CDATA[
+{
+  "title": "Administration Audit Trail",
+  "description": "Every change made to the Bastion's own configuration: who changed what, when, and from where.",
+  "visualizations": {
+    "viz_1": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Administration Audit Trail\nThe `[wabaudit]` stream, mapped to the CIM **Change** data model. Deletions and authorization edits are the two rows worth watching daily."
+      }
+    },
+    "viz_3": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Changes",
+      "dataSources": {
+        "primary": "ds_2"
+      }
+    },
+    "viz_5": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#B12F2F"
+      },
+      "title": "Deletions",
+      "dataSources": {
+        "primary": "ds_4"
+      }
+    },
+    "viz_7": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Identity changes",
+      "dataSources": {
+        "primary": "ds_6"
+      }
+    },
+    "viz_9": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below",
+        "majorColor": "#D6563C"
+      },
+      "title": "Authorization changes",
+      "dataSources": {
+        "primary": "ds_8"
+      }
+    },
+    "viz_11": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('n') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Backup / restore",
+      "dataSources": {
+        "primary": "ds_10"
+      }
+    },
+    "viz_13": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Administrators active",
+      "dataSources": {
+        "primary": "ds_12"
+      }
+    },
+    "viz_15": {
+      "type": "splunk.column",
+      "options": {
+        "stackMode": "stacked",
+        "legendDisplay": "right",
+        "xAxisTitleText": "",
+        "yAxisTitleText": "changes",
+        "seriesColors": "[#118832,#0877A6,#B12F2F,#8899A6,#D6563C]"
+      },
+      "title": "Changes over time",
+      "dataSources": {
+        "primary": "ds_14"
+      }
+    },
+    "viz_17": {
+      "type": "splunk.bar",
+      "options": {
+        "legendDisplay": "off",
+        "seriesColors": "[#0877A6]",
+        "yAxisTitleText": ""
+      },
+      "title": "What is being changed",
+      "dataSources": {
+        "primary": "ds_16"
+      }
+    },
+    "viz_19": {
+      "type": "splunk.table",
+      "options": {
+        "count": 15,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Administrators, ranked",
+      "dataSources": {
+        "primary": "ds_18"
+      },
+      "description": "An administrator appearing here for the first time is worth a question."
+    },
+    "viz_21": {
+      "type": "splunk.table",
+      "options": {
+        "count": 15,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Deletions",
+      "dataSources": {
+        "primary": "ds_20"
+      },
+      "description": "Deleting a user, an authorization or a recording policy is how an audit trail gets shortened."
+    },
+    "viz_23": {
+      "type": "splunk.table",
+      "options": {
+        "count": 30,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Full audit trail",
+      "dataSources": {
+        "primary": "ds_22"
+      }
+    }
+  },
+  "dataSources": {
+    "ds_2": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Changes"
+    },
+    "ds_4": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` action=deleted | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Deletions"
+    },
+    "ds_6": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` eventtype=wallix_bastion_account_management | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Identity changes"
+    },
+    "ds_8": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` eventtype=wallix_bastion_authorization_change | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Authorization changes"
+    },
+    "ds_10": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` wallix_action IN (backup, restore) | timechart span=1h count AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Backup / restore"
+    },
+    "ds_12": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` | stats dc(wallix_user) AS n",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Administrators active"
+    },
+    "ds_14": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` | timechart span=1h count BY action",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Change volume by CIM action"
+    },
+    "ds_16": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` | stats count BY wallix_object_type | sort - count | head 12",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Objects changed"
+    },
+    "ds_18": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` | stats count AS changes dc(wallix_object) AS objects values(wallix_client_ip) AS sources BY wallix_user | sort - changes | head 15\n| rename wallix_user AS administrator",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Administrators"
+    },
+    "ds_20": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit` action=deleted\n| table _time wallix_user wallix_object_type wallix_object wallix_client_ip wallix_infos\n| rename wallix_user AS administrator, wallix_object_type AS type, wallix_object AS object, wallix_client_ip AS source, wallix_infos AS detail\n| sort - _time | head 50",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Deletions"
+    },
+    "ds_22": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_audit`\n| table _time wallix_user action change_type wallix_object_type object_category wallix_object wallix_client_ip wallix_infos\n| rename wallix_user AS administrator, action AS \"CIM action\", change_type AS \"change type\", wallix_object_type AS \"object type\", object_category AS category, wallix_object AS object, wallix_client_ip AS source, wallix_infos AS detail\n| sort - _time | head 300",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Full audit trail"
+    }
+  },
+  "inputs": {
+    "input_time": {
+      "type": "input.timerange",
+      "options": {
+        "token": "time_tok",
+        "defaultValue": "-7d@d,now"
+      },
+      "title": "Time range"
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1354,
+      "display": "auto-scale",
+      "backgroundColor": "transparent"
+    },
+    "structure": [
+      {
+        "item": "viz_1",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_3",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_5",
+        "type": "block",
+        "position": {
+          "x": 242,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_7",
+        "type": "block",
+        "position": {
+          "x": 484,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_9",
+        "type": "block",
+        "position": {
+          "x": 726,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_11",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_13",
+        "type": "block",
+        "position": {
+          "x": 1210,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_15",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 222,
+          "w": 956,
+          "h": 300
+        }
+      },
+      {
+        "item": "viz_17",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 222,
+          "w": 472,
+          "h": 300
+        }
+      },
+      {
+        "item": "viz_19",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 538,
+          "w": 593,
+          "h": 300
+        }
+      },
+      {
+        "item": "viz_21",
+        "type": "block",
+        "position": {
+          "x": 605,
+          "y": 538,
+          "w": 835,
+          "h": 300
+        }
+      },
+      {
+        "item": "viz_23",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 854,
+          "w": 1440,
+          "h": 460
+        }
+      }
+    ],
+    "globalInputs": [
+      "input_time"
+    ]
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {}
+        }
+      }
+    }
+  }
+}
+]]></definition>
+  <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>

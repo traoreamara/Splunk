@@ -1,0 +1,11 @@
+<nav search_view="search" color="#0E5F85">
+  <view name="wallix_privileged_access_overview" default="true"/>
+  <view name="wallix_session_investigation"/>
+  <view name="wallix_administration_audit"/>
+  <view name="wallix_security_signals"/>
+  <collection label="Detections">
+    <a href="reports">Detection searches</a>
+    <a href="/manager/SA-wallix-advanced-monitoring/saved/searches?app=SA-wallix-advanced-monitoring&amp;owner=">Manage detections</a>
+  </collection>
+  <view name="search"/>
+</nav>

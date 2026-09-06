@@ -1,0 +1,447 @@
+<dashboard version="2" theme="light">
+  <label>Privileged Access Overview</label>
+  <description>Who reached which privileged account through the Bastion, and how the authentication and session outcomes are trending.</description>
+  <definition><![CDATA[
+{
+  "title": "Privileged Access Overview",
+  "description": "Who reached which privileged account through the Bastion, and how the authentication and session outcomes are trending.",
+  "visualizations": {
+    "viz_1": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Privileged Access Overview\nEvery privileged session brokered by WALLIX Bastion. Use the time range to change the window; click a bar or a row to pivot into **Session Investigation**."
+      }
+    },
+    "viz_3": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Live sessions",
+      "dataSources": {
+        "primary": "ds_2"
+      }
+    },
+    "viz_5": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('sessions') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Sessions opened",
+      "dataSources": {
+        "primary": "ds_4"
+      }
+    },
+    "viz_7": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('failures') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Failed authentications",
+      "dataSources": {
+        "primary": "ds_6"
+      }
+    },
+    "viz_9": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0
+      },
+      "title": "Privileged accounts used",
+      "dataSources": {
+        "primary": "ds_8"
+      }
+    },
+    "viz_11": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('signals') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "Critical signals",
+      "dataSources": {
+        "primary": "ds_10"
+      }
+    },
+    "viz_13": {
+      "type": "splunk.singlevalue",
+      "options": {
+        "majorFontSize": 42,
+        "shouldUseThousandSeparators": true,
+        "numberPrecision": 0,
+        "majorValue": "> primary | seriesByName('transfers') | sum()",
+        "sparklineDisplay": "below"
+      },
+      "title": "File transfers",
+      "dataSources": {
+        "primary": "ds_12"
+      }
+    },
+    "viz_15": {
+      "type": "splunk.line",
+      "options": {
+        "xAxisTitleText": "",
+        "yAxisTitleText": "events",
+        "legendDisplay": "right",
+        "seriesColors": "[#118832,#B12F2F,#8899A6]",
+        "showRoundedY2AxisLabels": true
+      },
+      "title": "Authentication outcome",
+      "dataSources": {
+        "primary": "ds_14"
+      },
+      "description": "Split of every authentication decision the Bastion made."
+    },
+    "viz_17": {
+      "type": "splunk.pie",
+      "options": {
+        "showDonutHole": true,
+        "legendDisplay": "bottom",
+        "labelDisplay": "valuesAndPercentage"
+      },
+      "title": "Sessions by protocol",
+      "dataSources": {
+        "primary": "ds_16"
+      }
+    },
+    "viz_19": {
+      "type": "splunk.bar",
+      "options": {
+        "stackMode": "stacked",
+        "legendDisplay": "bottom",
+        "seriesColors": "[#B12F2F,#0877A6]",
+        "yAxisTitleText": ""
+      },
+      "title": "Top operators",
+      "dataSources": {
+        "primary": "ds_18"
+      },
+      "description": "Who is using the Bastion most, and how often they fail."
+    },
+    "viz_21": {
+      "type": "splunk.bar",
+      "options": {
+        "legendDisplay": "bottom",
+        "seriesColors": "[#0877A6,#8899A6]",
+        "yAxisTitleText": ""
+      },
+      "title": "Most-used privileged accounts",
+      "dataSources": {
+        "primary": "ds_20"
+      },
+      "description": "account@device, with how many distinct operators touched it."
+    },
+    "viz_23": {
+      "type": "splunk.table",
+      "options": {
+        "count": 25,
+        "dataOverlayMode": "none",
+        "drilldown": "none",
+        "rowNumbers": false,
+        "wrap": true,
+        "backgroundColor": "> themes.defaultBackgroundColor"
+      },
+      "title": "Recent sessions",
+      "dataSources": {
+        "primary": "ds_22"
+      },
+      "description": "Newest first. Copy a session id into Session Investigation, or into the Kill session action."
+    }
+  },
+  "dataSources": {
+    "ds_2": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_type=SESSION_ESTABLISHED_SUCCESSFULLY\n| stats dc(wallix_session_id) AS opened\n| appendcols [ search `wallix_bastion_sessions` wallix_type IN (SESSION_DISCONNECTION, SESSION_KILLED) | stats dc(wallix_session_id) AS closed ]\n| eval live = max(0, coalesce(opened,0) - coalesce(closed,0))\n| fields live",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Live sessions"
+    },
+    "ds_4": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_type=SESSION_ESTABLISHED_SUCCESSFULLY\n| timechart span=1h dc(wallix_session_id) AS sessions",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Sessions opened"
+    },
+    "ds_6": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (sourcetype=wallix:bastion:auth OR sourcetype=wallix:bastion:session) action=failure\n| timechart span=1h count AS failures",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Failed authentications"
+    },
+    "ds_8": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_account=*\n| stats dc(wallix_account) AS accounts",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Privileged accounts used"
+    },
+    "ds_10": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (eventtype=wallix_bastion_forbidden_pattern OR eventtype=wallix_bastion_clipboard_exfiltration OR eventtype=wallix_bastion_session_integrity_failure)\n| timechart span=1h count AS signals",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Critical signals"
+    },
+    "ds_12": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` eventtype=wallix_bastion_file_transfer\n| timechart span=1h count AS transfers",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "File transfers"
+    },
+    "ds_14": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion` (sourcetype=wallix:bastion:auth OR sourcetype=wallix:bastion:session)\n| eval outcome = case(action=\"success\",\"Success\", action=\"failure\",\"Failure\", true(),\"Other\")\n| timechart span=10m count BY outcome",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Authentication outcome over time"
+    },
+    "ds_16": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_service=*\n| stats dc(wallix_session_id) AS sessions BY wallix_service\n| sort - sessions",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Protocol split"
+    },
+    "ds_18": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_type IN (SESSION_ESTABLISHED_SUCCESSFULLY, CONNECTION_FAILED)\n| eval outcome = if(wallix_type=\"CONNECTION_FAILED\",\"Failed\",\"Opened\")\n| stats count BY wallix_user outcome\n| sort - count | head 20",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Top Bastion users"
+    },
+    "ds_20": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_account=* wallix_device=*\n| eval target = wallix_account . \"@\" . wallix_device\n| stats dc(wallix_session_id) AS sessions dc(wallix_user) AS operators BY target\n| sort - sessions | head 20",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Top target accounts"
+    },
+    "ds_22": {
+      "type": "ds.search",
+      "options": {
+        "query": "`wallix_bastion_sessions` wallix_type IN (SESSION_ESTABLISHED_SUCCESSFULLY, SESSION_DISCONNECTION, CONNECTION_FAILED, SESSION_KILLED)\n| eval target = coalesce(wallix_account,\"?\") . \"@\" . coalesce(wallix_device, wallix_target_ip, \"?\")\n| stats latest(_time) AS _time latest(wallix_type) AS last_event values(wallix_service) AS protocol latest(wallix_client_ip) AS source latest(duration) AS seconds BY wallix_session_id wallix_user target\n| eval duration = if(isnull(seconds), \"-\", tostring(seconds, \"duration\"))\n| sort - _time | head 100\n| table _time wallix_user target protocol source last_event duration wallix_session_id\n| rename wallix_user AS operator, last_event AS \"last event\", wallix_session_id AS \"session id\"",
+        "queryParameters": {
+          "earliest": "$time_tok.earliest$",
+          "latest": "$time_tok.latest$"
+        }
+      },
+      "name": "Recent sessions"
+    }
+  },
+  "inputs": {
+    "input_time": {
+      "type": "input.timerange",
+      "options": {
+        "token": "time_tok",
+        "defaultValue": "-24h@h,now"
+      },
+      "title": "Time range"
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1334,
+      "display": "auto-scale",
+      "backgroundColor": "transparent"
+    },
+    "structure": [
+      {
+        "item": "viz_1",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_3",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_5",
+        "type": "block",
+        "position": {
+          "x": 242,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_7",
+        "type": "block",
+        "position": {
+          "x": 484,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_9",
+        "type": "block",
+        "position": {
+          "x": 726,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_11",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_13",
+        "type": "block",
+        "position": {
+          "x": 1210,
+          "y": 76,
+          "w": 230,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_15",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 222,
+          "w": 956,
+          "h": 300
+        }
+      },
+      {
+        "item": "viz_17",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 222,
+          "w": 472,
+          "h": 300
+        }
+      },
+      {
+        "item": "viz_19",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 538,
+          "w": 714,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_21",
+        "type": "block",
+        "position": {
+          "x": 726,
+          "y": 538,
+          "w": 714,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_23",
+        "type": "block",
+        "position": {
+          "x": 0,
+          "y": 874,
+          "w": 1440,
+          "h": 420
+        }
+      }
+    ],
+    "globalInputs": [
+      "input_time"
+    ]
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {}
+        }
+      }
+    }
+  }
+}
+]]></definition>
+  <meta type="hiddenElements"><![CDATA[
+{"hideEdit": false, "hideOpenInSearch": false, "hideExport": false}
+]]></meta>
+</dashboard>
