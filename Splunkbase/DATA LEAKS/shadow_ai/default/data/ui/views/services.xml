@@ -1,0 +1,8 @@
+<dashboard version="1.1" theme="light">
+  <label>Shadow AI - Services</label>
+  <row><panel>
+    <title>Observed AI services (sanctioned vs not)</title>
+    <table><search><query>| `ai_web` | search ai_service=* | stats count AS requests dc(actor) AS actors sum(bytes_out) AS bytes_out values(ai_sanctioned) AS sanctioned by ai_service ai_vendor ai_category | eval MB=round(bytes_out/1048576,1) | sort - requests | fields ai_service ai_vendor ai_category sanctioned actors requests MB</query>
+      <earliest>-7d</earliest><latest>now</latest></search></table>
+  </panel></row>
+</dashboard>

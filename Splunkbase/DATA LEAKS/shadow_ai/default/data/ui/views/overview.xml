@@ -1,0 +1,37 @@
+<dashboard version="1.1" theme="light">
+  <label>Shadow AI - Overview</label>
+  <description>Overview of generative-AI service usage</description>
+  <row>
+    <panel>
+      <title>AI service requests (24h)</title>
+      <single><search><query>| `ai_web` | search ai_service=* | stats count</query>
+        <earliest>-24h</earliest><latest>now</latest></search>
+        <option name="colorBy">value</option></single>
+    </panel>
+    <panel>
+      <title>Actors involved (24h)</title>
+      <single><search><query>| `ai_web` | search ai_service=* | stats dc(actor)</query>
+        <earliest>-24h</earliest><latest>now</latest></search></single>
+    </panel>
+    <panel>
+      <title>Data sent to AI (MB, 24h)</title>
+      <single><search><query>| `ai_web` | search ai_service=* | stats sum(bytes_out) AS b | eval MB=round(b/1048576,1) | fields MB</query>
+        <earliest>-24h</earliest><latest>now</latest></search>
+        <option name="unit">MB</option></single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Usage by AI service</title>
+      <chart><search><query>| `ai_web` | search ai_service=* | stats count by ai_service | sort - count</query>
+        <earliest>-7d</earliest><latest>now</latest></search>
+        <option name="charting.chart">bar</option></chart>
+    </panel>
+    <panel>
+      <title>Usage trend (7d)</title>
+      <chart><search><query>| `ai_web` | search ai_service=* | timechart span=1h count by ai_vendor</query>
+        <earliest>-7d</earliest><latest>now</latest></search>
+        <option name="charting.chart">line</option></chart>
+    </panel>
+  </row>
+</dashboard>

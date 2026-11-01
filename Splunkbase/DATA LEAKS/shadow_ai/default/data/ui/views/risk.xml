@@ -1,0 +1,15 @@
+<dashboard version="1.1" theme="light">
+  <label>Shadow AI - Risk</label>
+  <description>Shadow AI risk scoring per actor (RBA)</description>
+  <row><panel>
+    <title>Top risky actors (index=risk, 24h)</title>
+    <table><search><query>index=risk source="Shadow AI" | stats sum(risk_score) AS risk_total latest(ai_service) AS services latest(bytes_out) AS bytes_out by risk_object | eval MB=round(bytes_out/1048576,2) | sort - risk_total | fields risk_object risk_total services MB</query>
+      <earliest>-24h</earliest><latest>now</latest></search></table>
+  </panel></row>
+  <row><panel>
+    <title>Aggregated risk trend (7d)</title>
+    <chart><search><query>index=risk source="Shadow AI" | timechart span=1h sum(risk_score) AS risk</query>
+      <earliest>-7d</earliest><latest>now</latest></search>
+      <option name="charting.chart">area</option></chart>
+  </panel></row>
+</dashboard>

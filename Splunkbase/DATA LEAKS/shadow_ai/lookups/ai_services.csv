@@ -1,0 +1,67 @@
+domain,service,vendor,category,sanctioned,risk
+chatgpt.com,ChatGPT,OpenAI,llm_chat,false,high
+*.chatgpt.com,ChatGPT,OpenAI,llm_chat,false,high
+openai.com,OpenAI,OpenAI,llm_api,false,high
+*.openai.com,OpenAI,OpenAI,llm_api,false,high
+sora.com,Sora,OpenAI,media_gen,false,medium
+*.sora.com,Sora,OpenAI,media_gen,false,medium
+claude.ai,Claude,Anthropic,llm_chat,false,high
+*.claude.ai,Claude,Anthropic,llm_chat,false,high
+anthropic.com,Anthropic,Anthropic,llm_api,false,high
+*.anthropic.com,Anthropic,Anthropic,llm_api,false,high
+gemini.google.com,Gemini,Google,llm_chat,false,high
+bard.google.com,Gemini,Google,llm_chat,false,high
+aistudio.google.com,Google AI Studio,Google,llm_api,false,high
+notebooklm.google.com,NotebookLM,Google,llm_rag,false,medium
+generativelanguage.googleapis.com,Gemini API,Google,llm_api,false,high
+copilot.microsoft.com,Copilot,Microsoft,llm_chat,false,medium
+copilot.cloud.microsoft,M365 Copilot,Microsoft,llm_chat,false,low
+meta.ai,Meta AI,Meta,llm_chat,false,high
+*.meta.ai,Meta AI,Meta,llm_chat,false,high
+perplexity.ai,Perplexity,Perplexity,llm_search,false,medium
+*.perplexity.ai,Perplexity,Perplexity,llm_search,false,medium
+mistral.ai,Mistral,Mistral,llm_chat,false,high
+*.mistral.ai,Mistral,Mistral,llm_chat,false,high
+grok.com,Grok,xAI,llm_chat,false,high
+*.grok.com,Grok,xAI,llm_chat,false,high
+x.ai,xAI,xAI,llm_api,false,high
+*.x.ai,xAI,xAI,llm_api,false,high
+deepseek.com,DeepSeek,DeepSeek,llm_chat,false,high
+*.deepseek.com,DeepSeek,DeepSeek,llm_chat,false,high
+huggingface.co,Hugging Face,Hugging Face,ml_platform,false,medium
+*.huggingface.co,Hugging Face,Hugging Face,ml_platform,false,medium
+poe.com,Poe,Quora,llm_aggregator,false,high
+*.poe.com,Poe,Quora,llm_aggregator,false,high
+character.ai,Character.AI,Character.AI,llm_chat,false,medium
+*.character.ai,Character.AI,Character.AI,llm_chat,false,medium
+you.com,You.com,You,llm_search,false,medium
+*.you.com,You.com,You,llm_search,false,medium
+kimi.com,Kimi,Moonshot,llm_chat,false,high
+*.kimi.com,Kimi,Moonshot,llm_chat,false,high
+tongyi.aliyun.com,Tongyi Qianwen,Alibaba,llm_chat,false,high
+githubcopilot.com,GitHub Copilot,GitHub,code_assistant,false,high
+*.githubcopilot.com,GitHub Copilot,GitHub,code_assistant,false,high
+copilot-proxy.githubusercontent.com,GitHub Copilot,GitHub,code_assistant,false,high
+cursor.sh,Cursor,Anysphere,code_assistant,false,high
+*.cursor.sh,Cursor,Anysphere,code_assistant,false,high
+codeium.com,Codeium,Codeium,code_assistant,false,high
+*.codeium.com,Codeium,Codeium,code_assistant,false,high
+tabnine.com,Tabnine,Tabnine,code_assistant,false,medium
+*.tabnine.com,Tabnine,Tabnine,code_assistant,false,medium
+jasper.ai,Jasper,Jasper,content_gen,false,medium
+*.jasper.ai,Jasper,Jasper,content_gen,false,medium
+writesonic.com,Writesonic,Writesonic,content_gen,false,medium
+copy.ai,Copy.ai,Copy.ai,content_gen,false,medium
+*.copy.ai,Copy.ai,Copy.ai,content_gen,false,medium
+quillbot.com,QuillBot,QuillBot,writing_aid,false,medium
+*.quillbot.com,QuillBot,QuillBot,writing_aid,false,medium
+grammarly.com,Grammarly,Grammarly,writing_aid,false,medium
+*.grammarly.com,Grammarly,Grammarly,writing_aid,false,medium
+notion.so,Notion AI,Notion,productivity_ai,false,medium
+deepl.com,DeepL,DeepL,translation,false,medium
+*.deepl.com,DeepL,DeepL,translation,false,medium
+midjourney.com,Midjourney,Midjourney,media_gen,false,low
+leonardo.ai,Leonardo,Leonardo,media_gen,false,low
+elevenlabs.io,ElevenLabs,ElevenLabs,media_gen,false,low
+*.elevenlabs.io,ElevenLabs,ElevenLabs,media_gen,false,low
+gamma.app,Gamma,Gamma,productivity_ai,false,low

@@ -1,0 +1,8 @@
+<dashboard version="1.1" theme="light">
+  <label>Shadow AI - Actors</label>
+  <row><panel>
+    <title>Top actors by volume sent to AI</title>
+    <table><search><query>| `ai_web` | search ai_service=* | stats sum(bytes_out) AS bytes_out dc(ai_service) AS nb_services values(ai_service) AS services count AS requests by actor | eval MB=round(bytes_out/1048576,2) | sort - MB | fields actor MB nb_services services requests</query>
+      <earliest>-7d</earliest><latest>now</latest></search></table>
+  </panel></row>
+</dashboard>

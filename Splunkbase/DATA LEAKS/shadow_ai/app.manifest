@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2.0.0",
+  "info": {
+    "title": "Shadow AI",
+    "id": { "group": null, "name": "shadow_ai", "version": "1.0.0" },
+    "author": [ { "name": "Amara Traore", "email": "traore.amr@gmail.com" } ],
+    "releaseDate": null,
+    "description": "Shadow AI visibility and data-leak detection toward generative-AI services: maintained AI-services lookup, source-agnostic CIM, detections, RBA, ES findings + MITRE ATT&CK, dashboards.",
+    "classification": { "intendedAudience": "IT/Security", "categories": ["Security, Fraud & Compliance"], "developmentStatus": "Production" },
+    "commonInformationModels": { "Web": "4.0.0", "Network_Resolution": "4.0.0" },
+    "license": { "name": "Apache-2.0", "text": "LICENSE", "uri": "https://www.apache.org/licenses/LICENSE-2.0" },
+    "privacyPolicy": { "name": null, "text": null, "uri": null },
+    "releaseNotes": { "name": null, "text": "./README.md", "uri": null }
+  },
+  "dependencies": null,
+  "tasks": null, "inputGroups": null, "incompatibleApps": null, "platformRequirements": null,
+  "supportedDeployments": [ "_standalone", "_distributed", "_search_head_clustering" ],
+  "targetWorkloads": [ "_search_heads" ]
+}
