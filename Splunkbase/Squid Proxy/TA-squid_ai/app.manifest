@@ -8,7 +8,7 @@
     "description": "Input and CIM Web parsing for a Squid proxy logging upload bytes. Optional, for Squid environments. Use together with the shadow_ai app.",
     "classification": { "intendedAudience": "IT/Security", "categories": ["Security, Fraud & Compliance"], "developmentStatus": "Production" },
     "commonInformationModels": { "Web": "4.0.0" },
-    "license": { "name": null, "text": "LICENSE", "uri": null },
+    "license": { "name": "Apache-2.0", "text": "LICENSE", "uri": "https://www.apache.org/licenses/LICENSE-2.0" },
     "privacyPolicy": { "name": null, "text": null, "uri": null },
     "releaseNotes": { "name": null, "text": "./README.md", "uri": null }
   },
