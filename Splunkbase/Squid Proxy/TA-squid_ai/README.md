@@ -5,18 +5,18 @@ Input and CIM Web parsing for a Squid forward proxy that logs upload bytes
 Squid add-on is archived). Use together with the `shadow_ai` app.
 
 For enterprise SWGs (Zscaler, Palo Alto, Fortinet, Check Point, Netskope,
-Cisco...), use their official add-on instead — this TA is not needed.
+Cisco...), use their official add-on instead; this TA is not needed.
 
 ## Why Squid for Shadow AI
 Detecting a data leak toward an AI service is not about *whether* a user
-reached chatgpt.com — it is about *how much data they sent to it*. The
+reached chatgpt.com. It is about *how much data they sent to it*. The
 signal that separates "someone opened ChatGPT" from "someone pasted the
 customer database into ChatGPT" is the **upload volume** (bytes sent from
 the client to the service).
 
 Most proxies and firewalls log the response size but not the request
 (upload) size, so that signal is lost. Squid can emit it with the `%>st`
-field, and this TA maps it to CIM `bytes_out` — which the `shadow_ai`
+field, and this TA maps it to CIM `bytes_out`, which the `shadow_ai`
 detections use for the "large upload to AI service" rule and for per-user
 risk scoring. HTTPS is not an obstacle: even on a `CONNECT` tunnel Squid
 records the destination host and the byte counts without decrypting the
@@ -41,7 +41,7 @@ Add to squid.conf a logformat that includes upload bytes and the request target:
 
 ## Installation
 1. Install on the data-collection tier (heavy forwarder or indexer) AND on the
-   search head — field extractions and CIM EVALs are search-time and must be
+   search head: field extractions and CIM EVALs are search-time and must be
    present where searches run. On an all-in-one, a single install covers both.
 2. Adjust the monitor input path and index in `default/inputs.conf`:
 
